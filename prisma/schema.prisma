@@ -1,0 +1,11 @@
+// Prisma schema intentionally empty until docs/SCHEMA.md is approved.
+// Run `prisma migrate` only after sign-off.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
