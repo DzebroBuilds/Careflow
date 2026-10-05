@@ -1,0 +1,24 @@
+# Local Postgres only. App runs via `npm run dev` on the host.
+# Docker Desktop must be installed and running.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: oct-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-oct}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oct_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-oregon_compliance}
+    volumes:
+      - oct_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oct} -d ${POSTGRES_DB:-oregon_compliance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  oct_pgdata:
