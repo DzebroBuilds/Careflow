@@ -276,7 +276,23 @@ td.r,th.r{text-align:right}
 .tour .btns{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:2px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{opacity:.35}}
-@keyframes rise{from{transform:translateY(8px);opacity:0}}
+/* ---- motion polish: explicit properties, strong ease-out, press feedback ---- */
+:root{--ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);--ease-drawer:cubic-bezier(.32,.72,0,1)}
+html{-webkit-tap-highlight-color:transparent}
+button,.btn,.ib,[data-a]{touch-action:manipulation}
+.btn,.ib,.nav button,.tabs button,.rlist button,.att{transition:background-color .14s var(--ease-out),border-color .14s var(--ease-out),color .14s var(--ease-out),transform .16s var(--ease-out)}
+.btn:active,.ib:active,.nav button:active,.tabs button:active{transform:scale(.97)}
+.btn[disabled]:active{transform:none}
+.btn.pri:hover{filter:none;background:color-mix(in srgb,var(--accent) 88%,#fff)}
+.tabs button{transition:color .14s var(--ease-out),border-color .18s var(--ease-out)}
+.meter .f{transition:width .5s var(--ease-out)}
+.insp{transition:transform .26s var(--ease-drawer),visibility 0s .26s}
+.insp.open{transition:transform .26s var(--ease-drawer)}
+.scrim{transition:opacity .2s var(--ease-out),visibility 0s .2s}
+.toast{animation:rise .24s var(--ease-out)}
+@keyframes rise{from{transform:translateY(10px) scale(.98);opacity:0}}
+/* hover feedback only where hover exists, so touch screens don't get stuck states */
+@media (hover:none){.btn:hover,.ib:hover,.nav button:hover,.rlist button:hover,.att:hover,tr.row:hover td{background:revert;border-color:revert;color:revert}.btn.pri:hover{background:var(--accent)}.nav button.on:hover{background:var(--side-2)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:1000px){.cols,.prof{grid-template-columns:minmax(0,1fr)!important}}
 @media (max-width:900px){
