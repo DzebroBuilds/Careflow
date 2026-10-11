@@ -127,3 +127,70 @@ export async function getMedications(home?: string): Promise<MedRow[]> {
     }),
   }));
 }
+
+// ───────────── Action queue and audit findings ─────────────
+
+export type ActionSeverity = "critical" | "high" | "medium" | "low";
+export interface ActionItem {
+  id: string; severity: ActionSeverity; title: string; detail: string; home: string; homeName: string;
+  owner: string; due: string; category: "Staff" | "Medication records" | "Monthly files" | "Care plans" | "Risk consistency"; href: string;
+}
+const SEV_W: Record<ActionSeverity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+
+export async function getActions(home?: string): Promise<ActionItem[]> {
+  const out: ActionItem[] = [];
+  const hn = (k: string) => HOMES.find((h) => h.key === k)!.name;
+
+  for (const s of await getStaff(home)) for (const c of s.creds) {
+    if (c.state === "ok") continue;
+    const med = c.label === "Med administration";
+    const base = { home: s.home, homeName: s.homeName, category: "Staff" as const, href: `/homes/${s.home}` };
+    if (c.state === "lapsed") out.push({ ...base, id: `c-${s.name}-${c.label}`, severity: "critical", title: `${s.name}: ${c.label} lapsed ${-c.daysLeft}d ago`, detail: med ? "Cannot administer medications until renewed. Remove from med passes and the schedule." : "Remove from the schedule until renewed.", owner: "House manager", due: "Today" });
+    else out.push({ ...base, id: `c-${s.name}-${c.label}`, severity: c.state === "due_7" ? "high" : "medium", title: `${s.name}: ${c.label} expires in ${c.daysLeft}d`, detail: "Reminder sent to the employee. Book the renewal.", owner: "House manager", due: c.state === "due_7" ? "This week" : "This month" });
+  }
+
+  for (const r of await getTracking(home)) for (const c of r.cells) {
+    if (c.status === "VERIFIED") continue;
+    out.push({ id: `m-${r.resident}-${c.type}`, severity: "high", category: c.type === "MAR" ? "Medication records" : "Monthly files", home: r.home, homeName: r.homeName,
+      title: c.status === "REJECTED" ? `${c.type} for ${r.resident} was rejected` : `${c.type} for ${r.resident} not uploaded`,
+      detail: c.status === "REJECTED" ? "Missing staff signature and review date. Get it signed and upload again." : "September file is overdue. Upload the signed copy.", owner: "House manager", due: "Overdue", href: "/monthly" });
+  }
+
+  for (const r of await getResidents()) {
+    if (home && r.home !== home) continue;
+    for (const d of r.docs) {
+      if (d.status === "MISSING") out.push({ id: `d-${r.id}-${d.label}`, severity: "high", category: "Care plans", home: r.home, homeName: r.homeName, title: `${r.id}: ${d.label} is missing`, detail: "Request from the case manager or upload the signed plan.", owner: "Compliance team", due: "This week", href: "/residents" });
+      else if (d.status === "CONFLICT") out.push({ id: `d-${r.id}-${d.label}`, severity: "medium", category: "Care plans", home: r.home, homeName: r.homeName, title: `${r.id}: ${d.label} conflicts with other plans`, detail: "Review the proposed sync and approve it.", owner: "Compliance team", due: "This week", href: "/residents" });
+      else if (d.status === "REVIEW_DUE") out.push({ id: `d-${r.id}-${d.label}`, severity: "low", category: "Care plans", home: r.home, homeName: r.homeName, title: `${r.id}: ${d.label} review is due`, detail: "Schedule the annual review with the team.", owner: "Compliance team", due: "This month", href: "/residents" });
+    }
+    if (r.openDiscrepancies) out.push({ id: `x-${r.id}`, severity: "medium", category: "Risk consistency", home: r.home, homeName: r.homeName, title: `${r.id}: ${r.openDiscrepancies} risk ${r.openDiscrepancies === 1 ? "discrepancy" : "discrepancies"} between plans`, detail: "The same risk is described differently across plans. Approve the sync.", owner: "Compliance team", due: "This week", href: "/residents" });
+  }
+  void hn;
+  return out.sort((a, b) => SEV_W[a.severity] - SEV_W[b.severity]);
+}
+
+// ───────────── Agency control center (fake clients) ─────────────
+
+export interface ClientRow {
+  id: string; name: string; homes: number; residents: number; score: number; severity: Severity; trend: number[];
+  mrr: number; pendingApprovals: number; lastActive: string; status: "Active" | "Trial";
+}
+
+// Client "Northwest Supported Living" is computed from the real demo data; the others are invented.
+export async function getClients(): Promise<ClientRow[]> {
+  const mine = await getHomeSummaries();
+  const avg = Math.round(mine.reduce((n, h) => n + h.total, 0) / mine.length);
+  const mk = (id: string, name: string, homes: number, residents: number, score: number, approvals: number, active: string, status: "Active" | "Trial" = "Active"): ClientRow => ({
+    id, name, homes, residents, score, severity: severityOf(score), mrr: status === "Trial" ? 0 : 1000, pendingApprovals: approvals, lastActive: active, status,
+    trend: Array.from({ length: 8 }, (_, i) => Math.max(30, Math.min(100, Math.round(score - (7 - i) * (id.charCodeAt(0) % 3 - 0.6) + ((i * 7 + id.charCodeAt(1)) % 5) - 2)))).map((v, i, a) => (i === a.length - 1 ? score : v)),
+  });
+  return [
+    mk("nsl", "Northwest Supported Living", mine.length, mine.reduce((n, h) => n + h.residents, 0), avg, 7, "Today"),
+    mk("cvh", "Columbia Valley Homes", 5, 27, 88, 2, "Today"),
+    mk("wsc", "Willamette Support Collective", 4, 21, 74, 5, "Yesterday"),
+    mk("rrc", "Rogue River Care", 4, 18, 58, 9, "3 days ago"),
+    mk("hdr", "High Desert Residential", 5, 24, 91, 1, "Today"),
+    mk("cst", "Coastline Community Living", 4, 19, 69, 4, "2 days ago"),
+    mk("ssm", "Siskiyou Supported Living", 4, 16, 82, 0, "Today", "Trial"),
+  ];
+}

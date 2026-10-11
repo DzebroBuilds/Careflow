@@ -4,10 +4,12 @@ import { usePathname } from "next/navigation";
 
 const NAV = [
   { href: "/", label: "Overview" },
+  { href: "/today", label: "Today" },
   { href: "/residents", label: "Residents" },
   { href: "/staff", label: "Staff" },
   { href: "/medications", label: "Medications" },
   { href: "/monthly", label: "Monthly files" },
+  { href: "/audit", label: "Audit simulator" },
 ] as const;
 
 const HOMES = [
@@ -26,7 +28,7 @@ export function Sidebar() {
   return (
     <>
       <nav aria-label="Primary" className="glass sticky top-0 z-30 flex gap-1 overflow-x-auto rounded-none border-x-0 border-t-0 p-2 md:hidden">
-        {[...NAV, ...HOMES].map((n) => (
+        {[...NAV, ...HOMES, { href: "/agency", label: "Control center" }].map((n) => (
           <Link key={n.href} href={n.href} aria-current={isOn(path, n.href) ? "page" : undefined}
             className={`press flex h-9 shrink-0 items-center rounded-md px-3 font-medium ${isOn(path, n.href) ? "bg-accent-soft text-accent" : "text-fg-2"}`}>
             {n.label}
@@ -58,6 +60,13 @@ export function Sidebar() {
               {n.label}
             </Link>
           ))}
+        </nav>
+        <nav aria-label="Agency" className="flex flex-col gap-0.5">
+          <span className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-side-dim">Agency</span>
+          <Link href="/agency" aria-current={path === "/agency" ? "page" : undefined}
+            className={`press flex h-[34px] items-center rounded-md px-2.5 font-medium ${path === "/agency" ? "bg-side-2 text-white" : "hover:bg-side-2 hover:text-white"}`}>
+            Control center
+          </Link>
         </nav>
         <p className="mt-auto px-2 text-xs text-side-dim">Demo data. No real residents.</p>
       </aside>
