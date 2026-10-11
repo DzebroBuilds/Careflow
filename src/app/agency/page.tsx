@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth/guard";
 import { Sparkline } from "@/components/sparkline";
 import { Card, CardHead, PageHeader, Stat, StatGrid, Tag } from "@/components/ui";
 import { getClients } from "@/lib/data";
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Agency control center" };
 const SEV = { critical: ["bad", "Critical"], high: ["bad", "High"], watch: ["warn", "Watch"], clear: ["good", "Clear"] } as const;
 
 export default async function Agency() {
+  await requirePermission("view:agency");
   const clients = (await getClients()).sort((a, b) => a.score - b.score);
   const paying = clients.filter((c) => c.status === "Active");
   const mrr = paying.reduce((n, c) => n + c.mrr, 0);

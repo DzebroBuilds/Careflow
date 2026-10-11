@@ -21,6 +21,22 @@ npm run dev
   `DATABASE_URL=postgresql://careflow_app:<APP_DB_PASSWORD>@localhost:5432/oregon_compliance`
 - Re-run `npm run db:rls` after every migration. It is idempotent.
 
+## Sign in (demo accounts)
+
+Password for all: `careflow-demo`. For `next start` or a deployed build set `AUTH_SECRET` (see `.env.example`); `npm run dev` works without it.
+
+| Account | Role | Sees |
+|---|---|---|
+| agency@careflow.demo | Agency | everything, plus the control center |
+| owner@nwsl.demo | Owner | all four homes |
+| manager.alder@nwsl.demo | House manager | Alder House only |
+| dsp.birch@nwsl.demo | Direct support | Birch Lane floor work: Today, Residents, Medications, Monthly files, Incidents |
+| auditor@nwsl.demo | Auditor | all homes, read-only (no uploads) |
+
+Access is enforced in three places: `src/proxy.ts` (optimistic redirect), `requirePermission()` on every page, and the
+data layer in `src/lib/data.ts`, which filters every query to the signed-in user's homes. Accounts are fixtures in
+`src/lib/auth/users.ts`; swap for the `users`/`memberships` tables (Argon2, MFA) before a real client.
+
 ## Expected scores after seeding
 
 Alder House 92 (audit ready), Birch Lane 81 (watch), Cascade Court 66 (at risk), Dogwood Place 96 (audit ready).

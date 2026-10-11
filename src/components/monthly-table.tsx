@@ -16,7 +16,7 @@ const FILE = {
 const STAGES = ["Reading text (OCR)", "Checking signature blocks", "Matching document type"];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function MonthlyTable({ rows, showHome }: { rows: TrackingRow[]; showHome: boolean }) {
+export function MonthlyTable({ rows, showHome, canUpload }: { rows: TrackingRow[]; showHome: boolean; canUpload: boolean }) {
   const [cells, setCells] = useState<Record<string, Cell>>(() => {
     const m: Record<string, Cell> = {};
     for (const r of rows) for (const c of r.cells) m[`${r.resident}:${c.type}`] = { type: c.type, status: c.status as Status, version: c.status === "MISSING" ? 0 : 1 };
@@ -54,6 +54,7 @@ export function MonthlyTable({ rows, showHome }: { rows: TrackingRow[]; showHome
   }, [cells, toast]);
 
   const onFiles = (files: FileList | File[], target?: { resident: string; type: string }) => {
+    if (!canUpload) return;
     for (const f of Array.from(files)) {
       if (target) { run(target.resident, target.type, f); continue; }
       const t = detectTypeFromName(f.name);
@@ -66,11 +67,11 @@ export function MonthlyTable({ rows, showHome }: { rows: TrackingRow[]; showHome
 
   const n = (s: Status) => Object.values(cells).filter((c) => c.status === s).length;
   const total = Object.keys(cells).length;
-  const types = rows[0].cells.map((c) => c.type);
+  const types = ["MAR", "ONA", "Safety Plan"];
 
   return (
     <>
-      <div
+      {canUpload && <div
         onDragOver={(e) => { e.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
@@ -78,7 +79,7 @@ export function MonthlyTable({ rows, showHome }: { rows: TrackingRow[]; showHome
       >
         <p className="font-medium">Drop signed PDFs here</p>
         <p className="text-[13px] text-fg-2">Name them like <span className="font-mono text-xs">MAR_ZB_2026-09.pdf</span> and they file themselves. Files with &ldquo;unsigned&rdquo; in the name will be rejected, to demo the checks.</p>
-      </div>
+      </div>}
 
       <div className="rise mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {([["Verified", n("VERIFIED"), "text-good"], ["Rejected", n("REJECTED"), n("REJECTED") ? "text-bad" : ""], ["Missing", n("MISSING"), n("MISSING") ? "text-bad" : ""], ["Processing", n("PROCESSING"), ""]] as const).map(([l, v, c]) => (
@@ -118,7 +119,7 @@ export function MonthlyTable({ rows, showHome }: { rows: TrackingRow[]; showHome
                           : c.status === "VERIFIED"
                             ? <span className="text-fg-3"><span aria-hidden>✓</span><span className="sr-only">Verified</span></span>
                             : <Tag tone={FILE[c.status].tone}>{FILE[c.status].label}</Tag>}
-                        {c.status !== "PROCESSING" && (
+                        {canUpload && c.status !== "PROCESSING" && (
                           <button
                             onClick={() => { pick.current = { resident: r.resident, type: t }; input.current?.click(); }}
                             aria-label={`${act} ${t} for ${r.resident}`}

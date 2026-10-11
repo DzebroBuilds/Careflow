@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth/guard";
 import { Card, CardHead, PageHeader, Stat, StatGrid, Tag } from "@/components/ui";
 import { REPORTING_CLOCKS, getIncidents } from "@/lib/data";
 
@@ -12,6 +13,7 @@ const STATE = {
 const hrs = (h: number) => (Math.abs(h) >= 48 ? `${Math.round(Math.abs(h) / 24)}d` : `${Math.round(Math.abs(h))}h`);
 
 export default async function Incidents() {
+  await requirePermission("view:incidents");
   const rows = await getIncidents();
   const n = (s: string) => rows.filter((r) => r.state === s).length;
   const done = rows.filter((r) => r.state === "on_time" || r.state === "late");

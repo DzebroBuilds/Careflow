@@ -14,7 +14,7 @@ export function ResidentsTable({ rows }: { rows: ResidentRow[] }) {
   const [shown, setShown] = useState<ResidentRow | null>(null); // keeps content mounted during the exit slide
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastTrigger = useRef<HTMLElement | null>(null);
-  const heads = rows[0].docs.map((d) => d.label);
+  const heads = ["RIT", "ISP", "PRMS", "Safety Plan", "PBSP"];
 
   const open = (r: ResidentRow, el: HTMLElement) => { lastTrigger.current = el; setShown(r); setSel(r.id); };
   const close = () => { setSel(null); lastTrigger.current?.focus(); };

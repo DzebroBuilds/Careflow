@@ -1,6 +1,8 @@
 // Data access for the UI. Reads the fake fixtures today; swap the bodies for Prisma queries against
 // home_summaries / residents / staff_credentials later without touching any page.
 import { BAD_MONTHLY, HOMES, RESIDENTS, STAFF } from "./demo-data";
+import { allowedHomes } from "./auth/permissions";
+import { getSession } from "./auth/session";
 import {
   credentialState, scoreHome, severityOf, tierOf,
   type CareDocStatus, type CredentialState, type HomeScore, type MonthlyStatus, type Severity, type Tier,
@@ -13,10 +15,18 @@ export interface HomeSummary extends HomeScore {
   key: string; name: string; beds: number; residents: number; tier: Tier; severity: Severity; openItems: number;
 }
 
+/** Homes the signed-in user may see. Every query below filters through this, so a page can't leak another house. */
+async function scope(): Promise<Set<string>> {
+  const u = await getSession();
+  if (!u) return new Set();
+  return new Set(allowedHomes(u.role, u.home, HOMES.map((h) => h.key)));
+}
+
 const bad = (home: string) => (BAD_MONTHLY as Record<string, Record<string, string>>)[home] ?? {};
 
 export async function getHomeSummaries(): Promise<HomeSummary[]> {
-  return HOMES.map((h) => {
+  const allow = await scope();
+  return HOMES.filter((h) => allow.has(h.key)).map((h) => {
     const rs = RESIDENTS.filter((r) => r.home === h.key);
     const tracking = rs.flatMap((r) =>
       ["MAR", "ONA", "Safety Plan"].map((t) => {
@@ -45,7 +55,8 @@ export interface ResidentRow {
 }
 
 export async function getResidents(): Promise<ResidentRow[]> {
-  return RESIDENTS.map((r) => ({
+  const allow = await scope();
+  return RESIDENTS.filter((r) => allow.has(r.home)).map((r) => ({
     id: r.id, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name, room: r.room, flags: r.flags,
     docs: [...r.docs].map((c, i) => ({ label: DOC_LABELS[i], status: DOC[c] })),
     openDiscrepancies: r.openDiscrepancies,
@@ -56,7 +67,8 @@ export interface CredentialRow { staff: string; role: string; home: string; labe
 
 export async function getCredentials(): Promise<CredentialRow[]> {
   const L = [["CPR / First Aid", "cpr"], ["Background check", "background"], ["Med administration", "medAdmin"]] as const;
-  return STAFF.flatMap((s) =>
+  const allow = await scope();
+  return STAFF.filter((s) => allow.has(s.home)).flatMap((s) =>
     L.map(([label, k]) => ({
       staff: s.name, role: s.role, home: HOMES.find((h) => h.key === s.home)!.name, label,
       daysLeft: s[k], state: credentialState(s[k]),
@@ -74,21 +86,24 @@ export async function getHome(key: string) {
 }
 
 export async function getRiskDistribution(home?: string) {
+  const allow = await scope();
   const counts = new Map<string, number>();
-  for (const r of RESIDENTS.filter((x) => !home || x.home === home)) for (const f of r.flags) counts.set(f, (counts.get(f) ?? 0) + 1);
+  for (const r of RESIDENTS.filter((x) => allow.has(x.home) && (!home || x.home === home))) for (const f of r.flags) counts.set(f, (counts.get(f) ?? 0) + 1);
   return [...counts].map(([risk, n]) => ({ risk, n })).sort((a, b) => b.n - a.n);
 }
 
 export async function getCareDocCounts(home?: string) {
   const c: Record<CareDocStatus, number> = { CURRENT: 0, REVIEW_DUE: 0, CONFLICT: 0, MISSING: 0, PROCESSING: 0, ARCHIVED: 0 };
-  for (const r of RESIDENTS.filter((x) => !home || x.home === home)) for (const ch of r.docs) c[DOC[ch]]++;
+  const allow = await scope();
+  for (const r of RESIDENTS.filter((x) => allow.has(x.home) && (!home || x.home === home))) for (const ch of r.docs) c[DOC[ch]]++;
   return c;
 }
 
 export interface TrackingRow { resident: string; home: string; homeName: string; cells: { type: string; status: MonthlyStatus }[] }
 
 export async function getTracking(home?: string): Promise<TrackingRow[]> {
-  return RESIDENTS.filter((r) => !home || r.home === home).map((r) => ({
+  const allow = await scope();
+  return RESIDENTS.filter((r) => allow.has(r.home) && (!home || r.home === home)).map((r) => ({
     resident: r.id, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name,
     cells: ["MAR", "ONA", "Safety Plan"].map((t) => {
       const b = bad(r.home)[`${r.id}:${t}`];
@@ -103,7 +118,8 @@ export interface StaffRow {
 }
 
 export async function getStaff(home?: string): Promise<StaffRow[]> {
-  return STAFF.filter((s) => !home || s.home === home).map((s) => {
+  const allow = await scope();
+  return STAFF.filter((s) => allow.has(s.home) && (!home || s.home === home)).map((s) => {
     const creds = [
       { label: "CPR / First Aid", daysLeft: s.cpr }, { label: "Background check", daysLeft: s.background }, { label: "Med administration", daysLeft: s.medAdmin },
     ].map((c) => ({ ...c, state: credentialState(c.daysLeft) }));
@@ -118,7 +134,8 @@ export async function getStaff(home?: string): Promise<StaffRow[]> {
 export interface MedRow { resident: string; home: string; homeName: string; meds: { name: string; dose: string | null; freq: string; prn: boolean }[] }
 
 export async function getMedications(home?: string): Promise<MedRow[]> {
-  return RESIDENTS.filter((r) => !home || r.home === home).map((r) => ({
+  const allow = await scope();
+  return RESIDENTS.filter((r) => allow.has(r.home) && (!home || r.home === home)).map((r) => ({
     resident: r.id, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name,
     meds: r.meds.map((m) => {
       const [left, freq] = m.split(" · ");
@@ -178,6 +195,7 @@ export interface ClientRow {
 
 // Client "Northwest Supported Living" is computed from the real demo data; the others are invented.
 export async function getClients(): Promise<ClientRow[]> {
+  if ((await getSession())?.role !== "AGENCY") return []; // the control center is agency-only
   const mine = await getHomeSummaries();
   const avg = Math.round(mine.reduce((n, h) => n + h.total, 0) / mine.length);
   const mk = (id: string, name: string, homes: number, residents: number, score: number, approvals: number, active: string, status: "Active" | "Trial" = "Active"): ClientRow => ({
@@ -226,7 +244,8 @@ const RAW: { resident: string; type: IncidentType; summary: string; ago: number;
 ];
 
 export async function getIncidents(): Promise<IncidentRow[]> {
-  return RAW.map((x, i) => {
+  const allow = await scope();
+  return RAW.map((x, i) => ({ x, i })).filter(({ x }) => allow.has(RESIDENTS.find((q) => q.id === x.resident)!.home)).map(({ x, i }) => {
     const r = RESIDENTS.find((q) => q.id === x.resident)!;
     const clock = REPORTING_CLOCKS.find((c) => c.type === x.type)!.hours;
     const due = clock - x.ago;

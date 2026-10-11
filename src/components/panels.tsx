@@ -1,6 +1,8 @@
 import { BarList, Card, CardHead, Meter, Stat, StatGrid, Tag } from "@/components/ui";
 import { getCareDocCounts, getMedications, getResidents, getRiskDistribution, getStaff, getTracking } from "@/lib/data";
 import { ResidentsTable } from "@/components/residents-table";
+import { can } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { MonthlyTable } from "@/components/monthly-table";
 
 const CRED = {
@@ -101,8 +103,8 @@ export async function StaffPanel({ home }: { home?: string }) {
 }
 
 export async function TrackingPanel({ home }: { home?: string }) {
-  const rows = await getTracking(home);
-  return <MonthlyTable rows={rows} showHome={!home} />;
+  const [rows, user] = await Promise.all([getTracking(home), getSession()]);
+  return <MonthlyTable rows={rows} showHome={!home} canUpload={!!user && can(user.role, "upload:monthly")} />;
 }
 
 export async function MedsPanel({ home }: { home?: string }) {

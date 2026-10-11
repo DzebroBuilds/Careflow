@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth/guard";
 import { ActionList } from "@/components/actions";
 import { ExportFindings } from "@/components/audit-export";
 import { Card, CardHead, Meter, PageHeader, Tag } from "@/components/ui";
@@ -13,6 +14,7 @@ const OUTCOME = {
 } as const;
 
 export default async function Audit() {
+  await requirePermission("view:audit");
   const [homes, items] = await Promise.all([getHomeSummaries(), getActions()]);
   const sorted = [...homes].sort((a, b) => a.total - b.total);
   const serious = items.filter((i) => i.severity === "critical" || i.severity === "high");

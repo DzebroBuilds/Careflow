@@ -1,3 +1,4 @@
+import { requirePermission } from "@/lib/auth/guard";
 import Link from "next/link";
 import { CountUp } from "@/components/count-up";
 import { Card, Meter, PageHeader, Tag } from "@/components/ui";
@@ -10,6 +11,7 @@ const TIER = {
 } as const;
 
 export default async function Overview() {
+  await requirePermission("view:overview");
   const [homes, creds] = await Promise.all([getHomeSummaries(), getCredentials()]);
   const urgent = creds.filter((c) => c.state === "lapsed" || c.state === "due_7").slice(0, 6);
   const sorted = [...homes].sort((a, b) => a.total - b.total);

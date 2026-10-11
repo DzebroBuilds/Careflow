@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth/guard";
 import { ActionList, countBy } from "@/components/actions";
 import { PageHeader, Stat, StatGrid } from "@/components/ui";
 import { getActions } from "@/lib/data";
@@ -6,6 +7,7 @@ import { getActions } from "@/lib/data";
 export const metadata: Metadata = { title: "Today" };
 
 export default async function Today() {
+  await requirePermission("view:today");
   const items = await getActions();
   const crit = countBy(items, "critical");
   return (

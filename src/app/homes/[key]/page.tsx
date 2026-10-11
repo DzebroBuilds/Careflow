@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth/guard";
 import { notFound } from "next/navigation";
 import { CountUp } from "@/components/count-up";
 import { MedsPanel, ResidentsPanel, StaffPanel, TrackingPanel } from "@/components/panels";
@@ -24,6 +25,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function HomePage({ params }: PageProps<"/homes/[key]">) {
+  await requirePermission("view:homes");
   const h = await getHome((await params).key);
   if (!h) notFound();
   const [tone, label] = TIER[h.tier];
