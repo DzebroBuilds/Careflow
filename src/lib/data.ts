@@ -194,3 +194,51 @@ export async function getClients(): Promise<ClientRow[]> {
     mk("ssm", "Siskiyou Supported Living", 4, 16, 82, 0, "Today", "Trial"),
   ];
 }
+
+// ───────────── Incidents ─────────────
+
+// PLACEHOLDER reporting clocks (hours from occurrence). Confirm each against current Oregon rules and
+// the client's own policy before relying on them; these are configuration, not legal advice.
+export const REPORTING_CLOCKS = [
+  { type: "Allegation of abuse or neglect", hours: 2, note: "Mandatory report. Treat as immediate." },
+  { type: "Elopement", hours: 4, note: "Notify guardian and case manager." },
+  { type: "Injury needing medical care", hours: 24, note: "" },
+  { type: "Hospital visit", hours: 24, note: "" },
+  { type: "Medication error", hours: 24, note: "" },
+  { type: "Behavioral incident", hours: 48, note: "" },
+] as const;
+
+export type IncidentType = (typeof REPORTING_CLOCKS)[number]["type"];
+export interface IncidentRow {
+  id: string; resident: string; home: string; homeName: string; type: IncidentType; summary: string;
+  occurredHoursAgo: number; reportedAfterHours: number | null; dueInHours: number;
+  state: "overdue" | "due_soon" | "open" | "on_time" | "late";
+}
+
+const RAW: { resident: string; type: IncidentType; summary: string; ago: number; reported: number | null }[] = [
+  { resident: "TG", type: "Elopement", summary: "Left the house at shift change. Found within 15 minutes, no injury.", ago: 6, reported: null },
+  { resident: "OL", type: "Medication error", summary: "Evening dose given 90 minutes late. Prescriber notified.", ago: 20, reported: null },
+  { resident: "CW", type: "Injury needing medical care", summary: "Fall in the bathroom. Urgent care visit, sprained wrist.", ago: 30, reported: 5 },
+  { resident: "JP", type: "Behavioral incident", summary: "Refused evening medications twice, protocol followed.", ago: 40, reported: 30 },
+  { resident: "SF", type: "Hospital visit", summary: "Breakthrough seizure, ambulance transport, discharged same day.", ago: 70, reported: 29 },
+  { resident: "ZB", type: "Medication error", summary: "Wrong time on MAR initials, corrected same shift.", ago: 150, reported: 8 },
+  { resident: "LH", type: "Behavioral incident", summary: "Self-injury episode, de-escalated per PBSP.", ago: 210, reported: 20 },
+];
+
+export async function getIncidents(): Promise<IncidentRow[]> {
+  return RAW.map((x, i) => {
+    const r = RESIDENTS.find((q) => q.id === x.resident)!;
+    const clock = REPORTING_CLOCKS.find((c) => c.type === x.type)!.hours;
+    const due = clock - x.ago;
+    const state: IncidentRow["state"] =
+      x.reported !== null ? (x.reported <= clock ? "on_time" : "late") : due < 0 ? "overdue" : due <= clock / 3 ? "due_soon" : "open";
+    return {
+      id: `INC-${1040 + i}`, resident: x.resident, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name, type: x.type, summary: x.summary,
+      occurredHoursAgo: x.ago, reportedAfterHours: x.reported, dueInHours: due, state,
+    };
+  }).sort((a, b) => {
+    const ao = a.reportedAfterHours === null, bo = b.reportedAfterHours === null;
+    if (ao !== bo) return ao ? -1 : 1; // unreported first
+    return ao ? a.dueInHours - b.dueInHours : a.occurredHoursAgo - b.occurredHoursAgo;
+  });
+}

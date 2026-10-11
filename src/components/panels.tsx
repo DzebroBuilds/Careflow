@@ -1,15 +1,11 @@
 import { BarList, Card, CardHead, Meter, Stat, StatGrid, Tag } from "@/components/ui";
 import { getCareDocCounts, getMedications, getResidents, getRiskDistribution, getStaff, getTracking } from "@/lib/data";
 import { ResidentsTable } from "@/components/residents-table";
+import { MonthlyTable } from "@/components/monthly-table";
 
 const CRED = {
   lapsed: { tone: "bad", label: "Lapsed" }, due_7: { tone: "bad", label: "≤ 7 days" }, due_15: { tone: "warn", label: "≤ 15 days" },
   due_30: { tone: "warn", label: "≤ 30 days" }, ok: { tone: "good", label: "Current" },
-} as const;
-
-const FILE = {
-  VERIFIED: { tone: "good", label: "Verified" }, REJECTED: { tone: "bad", label: "Rejected" }, MISSING: { tone: "bad", label: "Missing" },
-  PROCESSING: { tone: "neutral", label: "Processing" }, ARCHIVED: { tone: "neutral", label: "Archived" },
 } as const;
 
 export async function ResidentsPanel({ home }: { home?: string }) {
@@ -106,47 +102,7 @@ export async function StaffPanel({ home }: { home?: string }) {
 
 export async function TrackingPanel({ home }: { home?: string }) {
   const rows = await getTracking(home);
-  const cells = rows.flatMap((r) => r.cells);
-  const n = (s: string) => cells.filter((c) => c.status === s).length;
-  const pct = Math.round((n("VERIFIED") / cells.length) * 100);
-  const types = rows[0].cells.map((c) => c.type);
-  return (
-    <>
-      <StatGrid>
-        <Stat label="Verified this month" value={`${pct}%`} sub={`${n("VERIFIED")} of ${cells.length} files`} tone={pct >= 90 ? "good" : pct >= 75 ? "warn" : "bad"} />
-        <Stat label="Rejected" value={n("REJECTED")} sub="Failed signature or date checks" tone={n("REJECTED") ? "bad" : "good"} />
-        <Stat label="Missing" value={n("MISSING")} sub="Not yet uploaded" tone={n("MISSING") ? "bad" : "good"} />
-        <Stat label="Period" value="Sep 2026" sub="Due Oct 5" />
-      </StatGrid>
-      <Card className="overflow-x-auto">
-        <CardHead title="September monthly files" />
-        <table className="w-full min-w-[620px] border-collapse text-left">
-          <thead>
-            <tr className="border-b border-line text-xs font-semibold uppercase tracking-[0.06em] text-fg-3">
-              <th scope="col" className="px-4 py-2.5">Resident</th>
-              {!home && <th scope="col" className="px-2 py-2.5">Home</th>}
-              {types.map((t) => <th key={t} scope="col" className="px-2 py-2.5">{t}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.resident} className="border-b border-line last:border-0 hover:bg-surface-2">
-                <th scope="row" className="px-4 py-2.5 font-mono text-[13px] font-medium">{r.resident}</th>
-                {!home && <td className="px-2 py-2.5 whitespace-nowrap text-fg-2">{r.homeName}</td>}
-                {r.cells.map((c) => (
-                  <td key={c.type} className="px-2 py-2.5">
-                    {c.status === "VERIFIED"
-                      ? <span className="text-fg-3"><span aria-hidden>✓</span><span className="sr-only">Verified</span></span>
-                      : <Tag tone={FILE[c.status].tone}>{FILE[c.status].label}</Tag>}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-    </>
-  );
+  return <MonthlyTable rows={rows} showHome={!home} />;
 }
 
 export async function MedsPanel({ home }: { home?: string }) {

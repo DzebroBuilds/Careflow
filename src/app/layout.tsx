@@ -31,6 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const items: PaletteItem[] = [
     { id: "p-over", label: "Overview", hint: "Readiness by home", group: "Page", href: "/" },
     { id: "p-today", label: "Today", hint: "Ranked action queue", group: "Page", href: "/today" },
+    { id: "p-inc", label: "Incidents", hint: "Reporting clocks", group: "Page", href: "/incidents" },
     { id: "p-audit", label: "Audit simulator", hint: "What a reviewer would find", group: "Page", href: "/audit" },
     { id: "p-agency", label: "Control center", hint: "All clients", group: "Page", href: "/agency" },
     { id: "p-res", label: "Residents", hint: "Care files", group: "Page", href: "/residents" },
