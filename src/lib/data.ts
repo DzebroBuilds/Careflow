@@ -63,3 +63,67 @@ export async function getCredentials(): Promise<CredentialRow[]> {
     })),
   ).sort((a, b) => a.daysLeft - b.daysLeft);
 }
+
+// ───────────── Dashboards ─────────────
+
+export const HOME_LIST = HOMES.map((h) => ({ key: h.key, name: h.name }));
+
+export async function getHome(key: string) {
+  const all = await getHomeSummaries();
+  return all.find((h) => h.key === key.toUpperCase()) ?? null;
+}
+
+export async function getRiskDistribution(home?: string) {
+  const counts = new Map<string, number>();
+  for (const r of RESIDENTS.filter((x) => !home || x.home === home)) for (const f of r.flags) counts.set(f, (counts.get(f) ?? 0) + 1);
+  return [...counts].map(([risk, n]) => ({ risk, n })).sort((a, b) => b.n - a.n);
+}
+
+export async function getCareDocCounts(home?: string) {
+  const c: Record<CareDocStatus, number> = { CURRENT: 0, REVIEW_DUE: 0, CONFLICT: 0, MISSING: 0, PROCESSING: 0, ARCHIVED: 0 };
+  for (const r of RESIDENTS.filter((x) => !home || x.home === home)) for (const ch of r.docs) c[DOC[ch]]++;
+  return c;
+}
+
+export interface TrackingRow { resident: string; home: string; homeName: string; cells: { type: string; status: MonthlyStatus }[] }
+
+export async function getTracking(home?: string): Promise<TrackingRow[]> {
+  return RESIDENTS.filter((r) => !home || r.home === home).map((r) => ({
+    resident: r.id, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name,
+    cells: ["MAR", "ONA", "Safety Plan"].map((t) => {
+      const b = bad(r.home)[`${r.id}:${t}`];
+      return { type: t, status: (b === "missing" ? "MISSING" : b === "rejected" ? "REJECTED" : "VERIFIED") as MonthlyStatus };
+    }),
+  }));
+}
+
+export interface StaffRow {
+  name: string; role: string; home: string; homeName: string; trainingHours: number; requiredHours: number;
+  creds: { label: string; daysLeft: number; state: CredentialState }[]; worst: number; canPassMeds: boolean;
+}
+
+export async function getStaff(home?: string): Promise<StaffRow[]> {
+  return STAFF.filter((s) => !home || s.home === home).map((s) => {
+    const creds = [
+      { label: "CPR / First Aid", daysLeft: s.cpr }, { label: "Background check", daysLeft: s.background }, { label: "Med administration", daysLeft: s.medAdmin },
+    ].map((c) => ({ ...c, state: credentialState(c.daysLeft) }));
+    return {
+      name: s.name, role: s.role, home: s.home, homeName: HOMES.find((h) => h.key === s.home)!.name,
+      trainingHours: s.trainingHours, requiredHours: 24, creds,
+      worst: Math.min(...creds.map((c) => c.daysLeft)), canPassMeds: s.medAdmin >= 0,
+    };
+  }).sort((a, b) => a.worst - b.worst);
+}
+
+export interface MedRow { resident: string; home: string; homeName: string; meds: { name: string; dose: string | null; freq: string; prn: boolean }[] }
+
+export async function getMedications(home?: string): Promise<MedRow[]> {
+  return RESIDENTS.filter((r) => !home || r.home === home).map((r) => ({
+    resident: r.id, home: r.home, homeName: HOMES.find((h) => h.key === r.home)!.name,
+    meds: r.meds.map((m) => {
+      const [left, freq] = m.split(" · ");
+      const mt = left.match(/^(.*?)(?:\s+(\d[\d.,]*\s?(?:mg|mcg|IU)))?$/);
+      return { name: mt?.[1] ?? left, dose: mt?.[2] ?? null, freq, prn: freq === "PRN" };
+    }),
+  }));
+}

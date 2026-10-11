@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Sidebar } from "@/components/sidebar";
 import { TopBar, type PaletteItem } from "@/components/topbar";
-import { getCredentials, getResidents } from "@/lib/data";
+import { HOME_LIST, getCredentials, getResidents } from "@/lib/data";
 import "./globals.css";
 
 // Self-hosted via @fontsource: no runtime request to Google, works offline and in CI.
@@ -31,7 +31,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const items: PaletteItem[] = [
     { id: "p-over", label: "Overview", hint: "Readiness by home", group: "Page", href: "/" },
     { id: "p-res", label: "Residents", hint: "Care files", group: "Page", href: "/residents" },
-    { id: "p-staff", label: "Staff credentials", hint: "Expiry tracking", group: "Page", href: "/staff" },
+    { id: "p-staff", label: "Staff", hint: "Credentials and training", group: "Page", href: "/staff" },
+    { id: "p-med", label: "Medications", hint: "Orders and coverage", group: "Page", href: "/medications" },
+    { id: "p-mon", label: "Monthly files", hint: "MAR, ONA, Safety Plan", group: "Page", href: "/monthly" },
+    ...HOME_LIST.map((h) => ({ id: "h-" + h.key, label: h.name, hint: "Home dashboard", group: "Home", href: "/homes/" + h.key })),
     ...residents.map((r) => ({ id: "r-" + r.id, label: `Resident ${r.id}`, hint: `${r.homeName} · ${r.room}`, group: "Resident", href: "/residents" })),
     ...[...new Set(creds.map((c) => c.staff))].map((n) => ({ id: "s-" + n, label: n, hint: "Staff", group: "Staff", href: "/staff" })),
   ];
