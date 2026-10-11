@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
+/* Design tokens ported from the Wardwell prototype. Light by default, dark via OS or [data-theme]. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f1f3f6; --surface: #ffffff; --surface-2: #f6f8fa; --line: #e0e5eb; --line-strong: #c9d1da;
+  --fg: #13202c; --fg-2: #485766; --fg-3: #738190;
+  --accent: #2a57d6; --accent-fg: #ffffff; --accent-soft: #e6ecfc;
+  --good: #17803f; --good-soft: #e2f3e8; --warn: #8f5a00; --warn-soft: #fbeed2; --bad: #b3261b; --bad-soft: #fce5e2;
+  --side: #111a23; --side-2: #1a2530; --side-fg: #c5d0db; --side-dim: #7b8999; --side-line: #26323e;
+  --shadow: 0 12px 40px rgba(10, 20, 30, 0.18);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1117; --surface: #121a22; --surface-2: #17212b; --line: #223040; --line-strong: #32455a;
+    --fg: #e5ebf1; --fg-2: #a7b4c1; --fg-3: #79879a;
+    --accent: #7d9cff; --accent-fg: #0b1117; --accent-soft: #1a2646;
+    --good: #4fc47f; --good-soft: #0f2f1e; --warn: #e6ac3e; --warn-soft: #38290b; --bad: #ff7f70; --bad-soft: #401812;
+    --side: #0a1017; --side-2: #131d27; --side-fg: #c5d0db; --side-dim: #6f7d8d; --side-line: #1e2a36;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1117; --surface: #121a22; --surface-2: #17212b; --line: #223040; --line-strong: #32455a;
+  --fg: #e5ebf1; --fg-2: #a7b4c1; --fg-3: #79879a;
+  --accent: #7d9cff; --accent-fg: #0b1117; --accent-soft: #1a2646;
+  --good: #4fc47f; --good-soft: #0f2f1e; --warn: #e6ac3e; --warn-soft: #38290b; --bad: #ff7f70; --bad-soft: #401812;
+  --side: #0a1017; --side-2: #131d27; --side-fg: #c5d0db; --side-dim: #6f7d8d; --side-line: #1e2a36;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg); --color-surface: var(--surface); --color-surface-2: var(--surface-2);
+  --color-line: var(--line); --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg); --color-fg-2: var(--fg-2); --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent); --color-accent-fg: var(--accent-fg); --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good); --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn); --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad); --color-bad-soft: var(--bad-soft);
+  --color-side: var(--side); --color-side-2: var(--side-2); --color-side-fg: var(--side-fg);
+  --color-side-dim: var(--side-dim); --color-side-line: var(--side-line);
+  --font-sans: var(--font-public-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html { -webkit-tap-highlight-color: transparent; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg); color: var(--fg); font: 14px/1.5 var(--font-sans);
+  -webkit-font-smoothing: antialiased; margin: 0;
+}
+h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+h2 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button, a { touch-action: manipulation; }
+
+.press { transition: background-color 0.14s var(--ease-out), border-color 0.14s var(--ease-out), color 0.14s var(--ease-out), transform 0.16s var(--ease-out); }
+.press:active { transform: scale(0.97); }
+@media (hover: none) { .hov:hover { background: revert; } }
+
+.meter-fill { transition: width 0.5s var(--ease-out); }
+.rise { animation: rise 0.24s var(--ease-out) both; }
+@keyframes rise { from { transform: translateY(8px); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
