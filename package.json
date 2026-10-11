@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "db:rls": "psql \"$ADMIN_DATABASE_URL\" -v app_password=\"'$APP_DB_PASSWORD'\" -f prisma/rls.sql"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -35,6 +37,10 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "tsx": "^4.19.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

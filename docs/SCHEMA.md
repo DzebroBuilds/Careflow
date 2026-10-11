@@ -1,6 +1,13 @@
 # Proposed database schema + role matrix
 
-**Status: AWAITING APPROVAL — do not run `prisma migrate` until signed off.**
+**Status: APPROVED for the demo phase. `prisma/schema.prisma` (v2) is the source of truth; this document is the original design rationale.**
+
+### v2 changes (demo phase)
+- Billing is per client account (`Organization.subscriptionStatus`, `stripeCustomerId`), not per home. `HomeSubscription` is dropped.
+- Legal names, dates of birth and Medicaid / ODDS numbers are not modelled. Residents carry initials only. Add them back with column-level encryption before any real data.
+- Added: `User.isAgency` (cross-tenant back-office policy), `HomeSummary` (pre-computed scores so dashboards read one row), versioned documents (`ResidentDocument` + `DocumentVersion`), monthly tracking (`MonthlyTrackingPeriod`, `MonthlyFile`), `IncomingDocument`, `RiskDiscrepancy`, `Approval`, `ActivityEvent`, `MedicationDose`, `ReminderSent`.
+- Compliance score is pre-computed into `home_summaries`; the formulas live in `src/lib/compliance/scoring.ts`.
+- Row-level security is in `prisma/rls.sql` and must be re-run after every migration.
 
 This document is the contract for Step 1. After approval we will materialize it as `prisma/schema.prisma` + SQL RLS policies and migrate.
 
