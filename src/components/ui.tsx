@@ -18,11 +18,11 @@ export function Tag({ tone, children }: { tone: Tone; children: ReactNode }) {
   );
 }
 
-export function Meter({ value, tone, label }: { value: number; tone: Exclude<Tone, "neutral">; label: string }) {
+export function Meter({ value, tone, label, delay = 0 }: { value: number; tone: Exclude<Tone, "neutral">; label: string; delay?: number }) {
   const c = { good: "bg-good", warn: "bg-warn", bad: "bg-bad" }[tone];
   return (
     <div role="meter" aria-label={label} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} className="h-2 overflow-hidden rounded bg-surface-2 ring-1 ring-inset ring-line">
-      <div className={`meter-fill h-full rounded ${c}`} style={{ width: `${value}%` }} />
+      <div className={`meter-fill h-full rounded ${c}`} style={{ "--v": value / 100, "--d": `${delay}ms` } as React.CSSProperties} />
     </div>
   );
 }

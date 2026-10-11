@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CountUp } from "@/components/count-up";
 import { Card, Meter, PageHeader, Tag } from "@/components/ui";
 import { getCredentials, getHomeSummaries } from "@/lib/data";
 
@@ -20,15 +21,15 @@ export default async function Overview() {
         {sorted.map((h, i) => {
           const t = TIER[h.tier];
           return (
-            <Card key={h.key} className="rise p-4" >
-              <div style={{ animationDelay: `${i * 40}ms` }} className="rise">
+            <Card key={h.key} className="lift p-4">
+              <div>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="truncate">{h.name}</h2>
                     <p className="text-fg-3">{h.residents} of {h.beds} beds · {h.openItems} open items</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-[38px] leading-none font-semibold tracking-tight tabular-nums">{h.total}</div>
+                    <div className="text-[38px] leading-none font-semibold tracking-tight tabular-nums"><CountUp value={h.total} delay={i * 60} /></div>
                     <div className="mt-1.5"><Tag tone={t.tone}>{t.label}</Tag></div>
                   </div>
                 </div>
@@ -36,7 +37,7 @@ export default async function Overview() {
                   {([["Documents", h.docs], ["Monthly files", h.tracking], ["Risk consistency", h.risk], ["Staff credentials", h.staff]] as const).map(([k, v]) => (
                     <div key={k} className="contents">
                       <dt className="text-fg-2">{k}</dt>
-                      <dd className="m-0"><Meter label={k} value={v} tone={v >= 85 ? "good" : v >= 70 ? "warn" : "bad"} /></dd>
+                      <dd className="m-0"><Meter delay={i * 60 + 120} label={k} value={v} tone={v >= 85 ? "good" : v >= 70 ? "warn" : "bad"} /></dd>
                       <dd className="m-0 text-right font-mono text-xs tabular-nums text-fg-2">{v}</dd>
                     </div>
                   ))}

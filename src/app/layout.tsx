@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Sidebar } from "@/components/sidebar";
+import { TopBar, type PaletteItem } from "@/components/topbar";
+import { getCredentials, getResidents } from "@/lib/data";
 import "./globals.css";
 
 // Self-hosted via @fontsource: no runtime request to Google, works offline and in CI.
@@ -24,14 +26,27 @@ export const metadata: Metadata = {
   description: "Compliance readiness for Oregon group homes.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const [residents, creds] = await Promise.all([getResidents(), getCredentials()]);
+  const items: PaletteItem[] = [
+    { id: "p-over", label: "Overview", hint: "Readiness by home", group: "Page", href: "/" },
+    { id: "p-res", label: "Residents", hint: "Care files", group: "Page", href: "/residents" },
+    { id: "p-staff", label: "Staff credentials", hint: "Expiry tracking", group: "Page", href: "/staff" },
+    ...residents.map((r) => ({ id: "r-" + r.id, label: `Resident ${r.id}`, hint: `${r.homeName} · ${r.room}`, group: "Resident", href: "/residents" })),
+    ...[...new Set(creds.map((c) => c.staff))].map((n) => ({ id: "s-" + n, label: n, hint: "Staff", group: "Staff", href: "/staff" })),
+  ];
   return (
-    <html lang="en" className={`${publicSans.variable} ${plexMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${publicSans.variable} ${plexMono.variable}`}>
+      <head>
+        {/* Apply the saved theme before first paint to avoid a flash. */}
+        <script dangerouslySetInnerHTML={{ __html: 'try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}' }} />
+      </head>
       <body>
         <div className="grid h-dvh grid-cols-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[244px_minmax(0,1fr)] md:grid-rows-1">
           <Sidebar />
           <main className="min-h-0 overflow-y-auto">
-            <div className="mx-auto w-full max-w-[1240px] px-4 py-6 md:px-8">{children}</div>
+            <TopBar items={items} />
+            <div className="mx-auto w-full max-w-[1240px] px-4 pt-5 pb-8 md:px-8">{children}</div>
           </main>
         </div>
       </body>

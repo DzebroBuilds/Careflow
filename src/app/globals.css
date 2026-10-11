@@ -8,6 +8,7 @@
   --good: #17803f; --good-soft: #e2f3e8; --warn: #8f5a00; --warn-soft: #fbeed2; --bad: #b3261b; --bad-soft: #fce5e2;
   --side: #111a23; --side-2: #1a2530; --side-fg: #c5d0db; --side-dim: #7b8999; --side-line: #26323e;
   --shadow: 0 12px 40px rgba(10, 20, 30, 0.18);
+  --glass: rgba(255, 255, 255, 0.72); --glass-line: rgba(19, 32, 44, 0.12); --scrim: rgba(11, 18, 25, 0.35);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -19,6 +20,7 @@
     --good: #4fc47f; --good-soft: #0f2f1e; --warn: #e6ac3e; --warn-soft: #38290b; --bad: #ff7f70; --bad-soft: #401812;
     --side: #0a1017; --side-2: #131d27; --side-fg: #c5d0db; --side-dim: #6f7d8d; --side-line: #1e2a36;
     --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --glass: rgba(18, 26, 34, 0.68); --glass-line: rgba(229, 235, 241, 0.12); --scrim: rgba(0, 0, 0, 0.55);
     color-scheme: dark;
   }
 }
@@ -29,6 +31,7 @@
   --good: #4fc47f; --good-soft: #0f2f1e; --warn: #e6ac3e; --warn-soft: #38290b; --bad: #ff7f70; --bad-soft: #401812;
   --side: #0a1017; --side-2: #131d27; --side-fg: #c5d0db; --side-dim: #6f7d8d; --side-line: #1e2a36;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --glass: rgba(18, 26, 34, 0.68); --glass-line: rgba(229, 235, 241, 0.12); --scrim: rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
@@ -60,9 +63,37 @@ button, a { touch-action: manipulation; }
 .press:active { transform: scale(0.97); }
 @media (hover: none) { .hov:hover { background: revert; } }
 
-.meter-fill { transition: width 0.5s var(--ease-out); }
-.rise { animation: rise 0.24s var(--ease-out) both; }
-@keyframes rise { from { transform: translateY(8px); opacity: 0; } }
+/* Glass: only on floating layers (top bar, drawer, palette, mobile nav). Data surfaces stay solid. */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--surface); }
+}
+
+/* Meters grow from zero with transform, not width, so they stay on the compositor. */
+.meter-fill { transform: scaleX(var(--v)); transform-origin: left; animation: fill 0.8s var(--ease-out) both; animation-delay: var(--d, 0ms); }
+@keyframes fill { from { transform: scaleX(0); } }
+
+.rise { animation: rise 0.32s var(--ease-out) both; animation-delay: var(--d, 0ms); }
+@keyframes rise { from { transform: translateY(10px); opacity: 0; } }
+
+/* Hover lift only where hover exists. */
+.lift { transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out); }
+@media (hover: hover) { .lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10, 20, 30, 0.1); border-color: var(--line-strong); } }
+
+/* Slide-out inspector */
+.drawer { transform: translateX(104%); visibility: hidden; transition: transform 0.3s var(--ease-drawer), visibility 0s 0.3s; }
+.drawer[data-open="true"] { transform: none; visibility: visible; transition: transform 0.3s var(--ease-drawer); }
+.scrim { opacity: 0; visibility: hidden; transition: opacity 0.2s var(--ease-out), visibility 0s 0.2s; background: var(--scrim); }
+.scrim[data-open="true"] { opacity: 1; visibility: visible; transition: opacity 0.2s var(--ease-out); }
+
+/* Sliding nav indicator */
+.nav-pill { transition: transform 0.28s var(--ease-drawer); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
