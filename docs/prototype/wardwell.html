@@ -1,0 +1,1141 @@
+<title>Wardwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: dark slate rail on the left, scrolling workspace on the right, inspector slides over the workspace so context is never lost. */
+:root{
+  --sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --bg:#F1F3F6; --surface:#FFFFFF; --surface-2:#F6F8FA; --line:#E0E5EB; --line-strong:#C9D1DA;
+  --fg:#13202C; --fg-2:#485766; --fg-3:#738190;
+  --accent:#2A57D6; --accent-fg:#FFFFFF; --accent-soft:#E6ECFC;
+  --good:#17803F; --good-soft:#E2F3E8; --warn:#8F5A00; --warn-soft:#FBEED2; --bad:#B3261B; --bad-soft:#FCE5E2;
+  --side:#111A23; --side-2:#1A2530; --side-fg:#C5D0DB; --side-dim:#7B8999; --side-line:#26323E;
+  --toast:#13202C; --toast-fg:#F1F5F9; --scrim:rgba(11,18,25,.45);
+  --shadow:0 12px 40px rgba(10,20,30,.18);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1117; --surface:#121A22; --surface-2:#17212B; --line:#223040; --line-strong:#32455A;
+  --fg:#E5EBF1; --fg-2:#A7B4C1; --fg-3:#79879A;
+  --accent:#7D9CFF; --accent-fg:#0B1117; --accent-soft:#1A2646;
+  --good:#4FC47F; --good-soft:#0F2F1E; --warn:#E6AC3E; --warn-soft:#38290B; --bad:#FF7F70; --bad-soft:#401812;
+  --side:#0A1017; --side-2:#131D27; --side-fg:#C5D0DB; --side-dim:#6F7D8D; --side-line:#1E2A36;
+  --toast:#E5EBF1; --toast-fg:#0B1117; --scrim:rgba(0,0,0,.6); --shadow:0 12px 40px rgba(0,0,0,.5);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1117; --surface:#121A22; --surface-2:#17212B; --line:#223040; --line-strong:#32455A;
+  --fg:#E5EBF1; --fg-2:#A7B4C1; --fg-3:#79879A;
+  --accent:#7D9CFF; --accent-fg:#0B1117; --accent-soft:#1A2646;
+  --good:#4FC47F; --good-soft:#0F2F1E; --warn:#E6AC3E; --warn-soft:#38290B; --bad:#FF7F70; --bad-soft:#401812;
+  --side:#0A1017; --side-2:#131D27; --side-fg:#C5D0DB; --side-dim:#6F7D8D; --side-line:#1E2A36;
+  --toast:#E5EBF1; --toast-fg:#0B1117; --scrim:rgba(0,0,0,.6); --shadow:0 12px 40px rgba(0,0,0,.5);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+h1{font-size:22px;font-weight:600;letter-spacing:-.015em;text-wrap:balance}
+h2{font-size:15px;font-weight:600;letter-spacing:-.005em}
+h3{font-size:13px;font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.i.s{width:15px;height:15px}
+.mono{font-family:var(--mono);font-size:12px}
+.num{font-variant-numeric:tabular-nums}
+.dim{color:var(--fg-3)} .dim2{color:var(--fg-2)}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--fg-3)}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--fg-3);background:var(--surface-2)}
+
+.app{display:grid;grid-template-columns:244px minmax(0,1fr);height:100%}
+.side{background:var(--side);color:var(--side-fg);display:flex;flex-direction:column;gap:20px;padding:16px 12px;overflow-y:auto;min-height:0}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px;color:#fff;font-weight:600;font-size:15px;letter-spacing:.01em}
+.mark{width:26px;height:26px;border-radius:6px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--side-2);border:1px solid var(--side-line);border-radius:7px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--side-dim);height:28px;border-radius:5px;font-size:12.5px;font-weight:500}
+.seg button.on{background:var(--side);color:#fff;box-shadow:0 0 0 1px var(--side-line)}
+.qs{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:7px;background:var(--side-2);border:1px solid var(--side-line);color:var(--side-dim);width:100%;text-align:left}
+.qs span{flex:1}
+.qs kbd{background:transparent;border-color:var(--side-line);color:var(--side-dim)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .lab{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--side-dim);padding:0 10px 6px}
+.nav button{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border:0;background:transparent;border-radius:6px;color:var(--side-fg);text-align:left;font-weight:500}
+.nav button:hover{background:var(--side-2)}
+.nav button.on{background:var(--side-2);color:#fff}
+.nav button.on .i{color:var(--accent)}
+.nav .ct{margin-left:auto;font-size:11.5px;font-weight:600;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--bad);color:#fff;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.nav .ct.n{background:var(--side-line);color:var(--side-fg)}
+.sidefoot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.live{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--side-dim);padding:0 8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.dot.busy{background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+.who{display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid var(--side-line);font-size:12.5px}
+.who b{display:block;color:#fff;font-weight:600}
+.who small{color:var(--side-dim);font-size:12px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--side-2);border:1px solid var(--side-line);display:grid;place-items:center;font-size:11px;font-weight:600;color:#fff;flex:none}
+
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.top .grow{flex:1;min-width:0}
+.top .crumb{font-size:12.5px;color:var(--fg-3)}
+.ib.menu{display:none}
+.hseg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:2px;gap:2px;max-width:100%;overflow-x:auto}
+.hseg button{border:0;background:transparent;height:28px;padding:0 12px;border-radius:5px;font-size:12.5px;font-weight:500;color:var(--fg-2);white-space:nowrap}
+.hseg button.on{background:var(--surface);color:var(--fg);box-shadow:0 0 0 1px var(--line-strong)}
+.content{flex:1;overflow-y:auto;padding:24px 28px 64px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph p{color:var(--fg-2);margin-top:4px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-b{padding:16px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--line-strong);background:var(--surface);font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--fg-2)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ib{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--fg-2)}
+.ib:hover{background:var(--surface-2);border-color:var(--line);color:var(--fg)}
+.acts{display:inline-flex;gap:2px;align-items:center;justify-content:flex-end}
+
+.tag{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;background:var(--surface-2);color:var(--fg-2);border:1px solid var(--line)}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag.nd::before{display:none}
+.tag.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tag.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.tag.info{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.tag.proc::before{width:10px;height:10px;background:none;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;border:1px solid var(--line-strong);background:var(--surface);font-size:12.5px;font-weight:500;color:var(--fg-2)}
+.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3);text-align:left;padding:9px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tr.row{cursor:pointer}
+tr.row:hover td{background:var(--surface-2)}
+tr.drag td{background:var(--accent-soft)}
+td.r,th.r{text-align:right}
+.cell2{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cell2 small{color:var(--fg-3);font-size:12px}
+.who2{display:flex;align-items:center;gap:10px}
+.av2{width:30px;height:30px;border-radius:6px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--mono);font-weight:500;font-size:12px;flex:none}
+.fields{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.fields span{font-size:11.5px;font-weight:600;color:var(--bad);background:var(--bad-soft);padding:1px 6px;border-radius:3px}
+
+.stat .big{font-size:34px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .big small{font-size:16px;color:var(--fg-3);font-weight:500;margin-left:2px}
+.stat .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--fg-2);padding:5px 0;border-top:1px solid var(--line)}
+.stat .big{margin-bottom:12px}
+.meter{position:relative;height:8px;border-radius:4px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.meter .f{position:absolute;inset:0 auto 0 0;width:calc(var(--v)*1%);border-radius:4px;background:var(--c);transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.meter i{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--fg-3);opacity:.7}
+.meter.good{--c:var(--good)} .meter.warn{--c:var(--warn)} .meter.bad{--c:var(--bad)}
+.mrow{display:grid;grid-template-columns:150px minmax(0,1fr) 38px;gap:12px;align-items:center;font-size:12.5px;color:var(--fg-2)}
+.mrow .meter{height:6px}
+.hc{display:flex;flex-direction:column;gap:14px}
+.hc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.hc .score{font-size:38px;font-weight:600;letter-spacing:-.025em;line-height:1;font-variant-numeric:tabular-nums}
+.hc .score small{font-size:16px;color:var(--fg-3);margin-left:1px}
+.legend{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--fg-3);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:1px;height:12px;background:var(--fg-3)}
+
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.feed li:last-child{border-bottom:0}
+.feed .ico{width:28px;height:28px;border-radius:6px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.feed .ico.g{background:var(--good-soft);color:var(--good)} .feed .ico.w{background:var(--warn-soft);color:var(--warn)} .feed .ico.b{background:var(--bad-soft);color:var(--bad)}
+.feed p{font-size:13px}
+.feed small{color:var(--fg-3);font-size:12px}
+.att{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line);cursor:pointer;width:100%;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left}
+.att:last-child{border-bottom:0}
+.att:hover{background:var(--surface-2)}
+.att .sev{align-self:stretch;border-radius:2px;background:var(--warn)}
+.att .sev.b{background:var(--bad)}
+.att b{font-weight:600;font-size:13px;display:block}
+.att small{color:var(--fg-3);font-size:12px}
+
+.dz{border:1.5px dashed var(--line-strong);border-radius:10px;padding:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--surface)}
+.dz.over{border-color:var(--accent);background:var(--accent-soft)}
+.dz .ic{width:40px;height:40px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.dz .t{flex:1;min-width:220px}
+.dz .t small{display:block;color:var(--fg-3);margin-top:2px}
+
+.mx td,.mx th{padding:9px 12px}
+.mx td.c{text-align:center}
+.cellst{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
+.cellst.good{color:var(--good)} .cellst.warn{color:var(--warn)} .cellst.bad{color:var(--bad)} .cellst.na{color:var(--fg-3);font-weight:400}
+.dis{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dis:last-child{border-bottom:0}
+.dis b{font-size:13px;display:block}
+.dis p{font-size:12.5px;color:var(--fg-2);margin-top:2px}
+.dis .fix{margin-top:6px;font-size:12.5px;display:flex;gap:6px;align-items:flex-start;color:var(--fg)}
+.dis .fix .i{color:var(--accent);margin-top:2px}
+.syncbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 10px 10px;flex-wrap:wrap}
+.rlist{display:flex;flex-direction:column}
+.rlist button{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
+.rlist button:last-child{border-bottom:0}
+.rlist button:hover{background:var(--surface-2)}
+.rlist button.on{background:var(--accent-soft)}
+
+.insp{position:fixed;top:0;right:0;bottom:0;width:min(540px,100%);background:var(--surface);border-left:1px solid var(--line-strong);box-shadow:var(--shadow);z-index:40;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .22s cubic-bezier(.2,.7,.2,1),visibility 0s .22s}
+.insp.open{transform:none;visibility:visible;transition:transform .22s cubic-bezier(.2,.7,.2,1)}
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:35;opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+.scrim.on{opacity:1;visibility:visible;transition:opacity .2s}
+.insp-h{display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.insp-h .grow{flex:1;min-width:0}
+.insp-b{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px}
+.tabs button{border:0;background:transparent;height:36px;padding:0 10px;font-weight:500;color:var(--fg-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--fg);border-bottom-color:var(--accent)}
+.kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 12px;font-size:13px}
+.kv dt{color:var(--fg-3)} .kv dd{margin:0}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.list>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.list>div:last-child{border-bottom:0}
+.paper{border:1px solid var(--line-strong);border-radius:6px;background:var(--surface-2);padding:16px;display:flex;flex-direction:column;gap:8px;max-width:320px}
+.paper b{font-size:12px;font-family:var(--mono);font-weight:500;color:var(--fg-2)}
+.paper .ln{height:5px;border-radius:3px;background:var(--line-strong)}
+.paper .blk{border:1.5px solid var(--good);border-radius:4px;padding:6px 8px;font-size:11.5px;font-weight:600;color:var(--good);background:var(--good-soft)}
+.paper .blk.bad{border-color:var(--bad);color:var(--bad);background:var(--bad-soft);border-style:dashed}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0}
+
+.toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;z-index:70;width:min(380px,calc(100% - 32px))}
+.toast{display:flex;align-items:center;gap:10px;background:var(--toast);color:var(--toast-fg);padding:10px 12px;border-radius:8px;box-shadow:var(--shadow);font-size:13px;animation:rise .22s cubic-bezier(.2,.7,.2,1)}
+.toast span{flex:1;min-width:0}
+.toast button{border:0;background:transparent;color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:2px 4px}
+.toast .i{flex:none}
+
+.pal{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 16px}
+.pal-box{width:min(600px,100%);background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.pal-in{display:flex;align-items:center;gap:10px;padding:0 14px;height:50px;border-bottom:1px solid var(--line)}
+.pal-in input{flex:1;border:0;outline:0;background:transparent;font-size:15px;min-width:0}
+.pal-list{max-height:min(380px,50vh);overflow-y:auto;padding:6px}
+.pal-g{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--fg-3);padding:8px 10px 4px}
+.pal-i{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:6px}
+.pal-i.on{background:var(--accent-soft)}
+.pal-i small{color:var(--fg-3)}
+.pal-empty{padding:24px;text-align:center;color:var(--fg-3)}
+
+.phone{width:340px;max-width:100%;border:1px solid var(--line-strong);border-radius:30px;background:var(--surface);padding:10px;margin:0 auto}
+.screen{border-radius:22px;background:var(--bg);display:flex;flex-direction:column;height:520px;overflow:hidden}
+.ph-h{padding:14px 16px;background:var(--side);color:#fff;display:flex;align-items:center;gap:10px}
+.ph-h small{color:var(--side-dim);display:block;font-size:11.5px}
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:13px;white-space:pre-line}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-bottom-right-radius:3px}
+.msg.b{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:3px}
+.src{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.src span{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:3px;background:var(--accent-soft);color:var(--accent)}
+.ph-f{padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--surface);border-top:1px solid var(--line)}
+.ph-f .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+.ph-f .chip{white-space:nowrap;flex:none;height:26px;font-size:12px}
+.ph-f form{display:flex;gap:8px}
+.ph-f input{flex:1;min-width:0;height:34px;border-radius:17px;border:1px solid var(--line-strong);background:var(--bg);padding:0 14px}
+
+.mar{border-collapse:separate;border-spacing:0;font-size:12px;width:max-content;min-width:100%}
+.mar th,.mar td{padding:0;height:30px;text-align:center;border-bottom:1px solid var(--line);background:var(--surface)}
+.mar th{font-size:11px;font-weight:600;color:var(--fg-3);background:var(--surface-2);letter-spacing:0;text-transform:none;min-width:26px}
+.mar th:first-child,.mar td:first-child{position:sticky;left:0;z-index:1;text-align:left;padding:0 12px;min-width:200px;border-right:1px solid var(--line)}
+.mar th:first-child{background:var(--surface-2);text-transform:uppercase;letter-spacing:.06em;font-size:11.5px}
+.mc i{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle}
+.mc.g i{background:var(--good)}
+.mc.r{color:var(--bad);font-weight:700} .mc.h{color:var(--warn);font-weight:700} .mc.n{color:var(--fg-3)}
+.mc.x i{width:11px;height:11px;border-radius:2px;border:1.5px dashed var(--bad);background:var(--bad-soft)}
+.key{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--fg-2)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good)}
+.key i.x{width:11px;height:11px;border-radius:2px;border:1.5px dashed var(--bad);background:var(--bad-soft)}
+.tl{list-style:none;margin:0;padding:0 16px 6px}
+.tl li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tl li:last-child{border-bottom:0}
+.tl time{color:var(--fg-3);font-size:12px;padding-top:1px}
+.tl small{display:block;color:var(--fg-3);font-size:12px}
+.tl .b{color:var(--bad);font-weight:500}
+.prof{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.tour{position:fixed;left:260px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 32px));background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:var(--shadow);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
+.tour p{color:var(--fg-2);font-size:13px}
+.tour .bar{display:flex;gap:4px}
+.tour .bar i{flex:1;height:3px;border-radius:2px;background:var(--line-strong)}
+.tour .bar i.on{background:var(--accent)}
+.tour .btns{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{opacity:.35}}
+/* ---- motion polish: explicit properties, strong ease-out, press feedback ---- */
+:root{--ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);--ease-drawer:cubic-bezier(.32,.72,0,1)}
+html{-webkit-tap-highlight-color:transparent}
+button,.btn,.ib,[data-a]{touch-action:manipulation}
+.btn,.ib,.nav button,.tabs button,.rlist button,.att{transition:background-color .14s var(--ease-out),border-color .14s var(--ease-out),color .14s var(--ease-out),transform .16s var(--ease-out)}
+.btn:active,.ib:active,.nav button:active,.tabs button:active{transform:scale(.97)}
+.btn[disabled]:active{transform:none}
+.btn.pri:hover{filter:none;background:color-mix(in srgb,var(--accent) 88%,#fff)}
+.tabs button{transition:color .14s var(--ease-out),border-color .18s var(--ease-out)}
+.meter .f{transition:width .5s var(--ease-out)}
+.insp{transition:transform .26s var(--ease-drawer),visibility 0s .26s}
+.insp.open{transition:transform .26s var(--ease-drawer)}
+.scrim{transition:opacity .2s var(--ease-out),visibility 0s .2s}
+.toast{animation:rise .24s var(--ease-out)}
+@keyframes rise{from{transform:translateY(10px) scale(.98);opacity:0}}
+/* hover feedback only where hover exists, so touch screens don't get stuck states */
+@media (hover:none){.btn:hover,.ib:hover,.nav button:hover,.rlist button:hover,.att:hover,tr.row:hover td{background:revert;border-color:revert;color:revert}.btn.pri:hover{background:var(--accent)}.nav button.on:hover{background:var(--side-2)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:1000px){.cols,.prof{grid-template-columns:minmax(0,1fr)!important}}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:264px;z-index:50;transform:translateX(-100%);transition:transform .22s}
+  .side.open{transform:none}
+  .ib.menu{display:inline-grid}
+  .top{padding:10px 16px}
+  .content{padding:18px 16px 64px}
+  .mrow{grid-template-columns:110px minmax(0,1fr) 34px}
+  .tour{left:16px}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.2 1.8 4.6 4.8"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-pill" viewBox="0 0 24 24"><path d="M10.5 20.5a4.95 4.95 0 0 1-7-7l9-9a4.95 4.95 0 0 1 7 7z"/><path d="M8.5 8.5l7 7"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></symbol>
+<symbol id="i-merge" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M6 8.5v7M8.5 6H12a3 3 0 0 1 3 3v.5M8.5 18H12a3 3 0 0 0 3-3v-.5"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+<symbol id="i-replace" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8L4 8"/><path d="M4 3v5h5M12 8v4l3 2"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 7a8 8 0 0 0-14-2M4 17a8 8 0 0 0 14 2M20 3v4h-4M4 21v-4h4"/></symbol>
+<symbol id="i-build" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M13.5 7.5l3 3"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="Primary"></aside>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main class="content" id="content"><div class="wrap" id="view"></div></main>
+  </div>
+</div>
+<div class="scrim" id="scrim" data-act="scrim"></div>
+<aside class="insp" id="insp" aria-label="Inspector" aria-hidden="true"></aside>
+<div class="pal" id="pal" hidden>
+  <div class="pal-box" role="dialog" aria-modal="true" aria-label="Quick search">
+    <div class="pal-in"><svg class="i"><use href="#i-search"/></svg><input id="palq" placeholder="Jump to a resident, medication, staff member or protocol" autocomplete="off" spellcheck="false"><kbd>esc</kbd></div>
+    <div class="pal-list" id="pall" role="listbox"></div>
+  </div>
+</div>
+<div class="tour" id="tour" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<input type="file" id="filein" accept="application/pdf,.pdf" hidden>
+
+<script>
+/*DATA-START*/
+const TODAY=new Date(2026,9,10);
+const addD=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return d};
+const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const fmtS=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const DOCS=['RIT','ISP','PRMS','Safety Plan','PBSP'];
+const H={A:'Alder House',B:'Birch Lane',C:'Cascade Court',D:'Dogwood Place'};
+const BEDS={A:6,B:5,C:6,D:6};
+const RES=[
+ {id:'ZB',h:'A',room:'Rm 2',since:2022,docs:'oodox',n:4,flags:['Elopement','Aspiration'],meds:['Lamotrigine 100 mg · BID','Melatonin 3 mg · bedtime','Vitamin D 2000 IU · AM']},
+ {id:'DN',h:'A',room:'Rm 1',since:2021,docs:'ooooo',n:0,flags:['Seizure'],meds:['Levetiracetam 500 mg · BID','Sertraline 50 mg · AM']},
+ {id:'MK',h:'A',room:'Rm 3',since:2023,docs:'ooood',n:0,flags:['Falls'],meds:['Risperidone 1 mg · bedtime','Metformin 500 mg · BID']},
+ {id:'RT',h:'A',room:'Rm 4',since:2020,docs:'ooooo',n:0,flags:[],meds:['Lisinopril 10 mg · AM','Atorvastatin 20 mg · bedtime']},
+ {id:'LH',h:'A',room:'Rm 5',since:2024,docs:'oooxo',n:0,flags:['Self-injury'],meds:['Clonidine 0.1 mg · bedtime','Cetirizine 10 mg · AM']},
+ {id:'JP',h:'B',room:'Rm 1',since:2022,docs:'oodmo',n:3,flags:['Medication refusal'],meds:['Quetiapine 50 mg · bedtime','Omeprazole 20 mg · AM','Folic acid 1 mg · AM']},
+ {id:'AS',h:'B',room:'Rm 2',since:2019,docs:'ooxoo',n:0,flags:['Aspiration'],meds:['Baclofen 10 mg · TID','Famotidine 20 mg · BID']},
+ {id:'CW',h:'B',room:'Rm 3',since:2023,docs:'dooxo',n:3,flags:['Elopement','Falls'],meds:['Valproate 250 mg · BID','Lorazepam 0.5 mg · PRN']},
+ {id:'EV',h:'B',room:'Rm 4',since:2021,docs:'oooom',n:0,flags:[],meds:['Levothyroxine 75 mcg · AM','Calcium 600 mg · PM']},
+ {id:'TG',h:'C',room:'Rm 1',since:2024,docs:'mdoxx',n:6,flags:['Elopement','Self-injury','Seizure'],meds:['Carbamazepine 200 mg · BID','Guanfacine 1 mg · AM','Melatonin 3 mg · bedtime']},
+ {id:'NB',h:'C',room:'Rm 2',since:2020,docs:'oomdo',n:0,flags:['Falls'],meds:['Donepezil 5 mg · bedtime','Amlodipine 5 mg · AM']},
+ {id:'OL',h:'C',room:'Rm 3',since:2022,docs:'dddxo',n:5,flags:['Aspiration','Medication refusal'],meds:['Olanzapine 10 mg · bedtime','Docusate 100 mg · BID','Vitamin B12 · AM']},
+ {id:'SF',h:'C',room:'Rm 4',since:2023,docs:'oxoom',n:3,flags:['Seizure'],meds:['Phenytoin 100 mg · TID','Folic acid 1 mg · AM']},
+ {id:'KM',h:'C',room:'Rm 5',since:2021,docs:'moooo',n:0,flags:[],meds:['Sertraline 100 mg · AM','Ibuprofen 400 mg · PRN']},
+ {id:'HM',h:'D',room:'Rm 1',since:2021,docs:'ooooo',n:0,flags:['Falls'],meds:['Amlodipine 5 mg · AM','Vitamin D 1000 IU · AM']},
+ {id:'CJ',h:'D',room:'Rm 2',since:2022,docs:'ooood',n:0,flags:['Aspiration'],meds:['Baclofen 10 mg · TID','Pantoprazole 40 mg · AM']},
+ {id:'AB',h:'D',room:'Rm 3',since:2023,docs:'ooooo',n:0,flags:['Seizure'],meds:['Lamotrigine 150 mg · BID','Melatonin 3 mg · bedtime']},
+ {id:'RS',h:'D',room:'Rm 4',since:2020,docs:'oodoo',n:0,flags:[],meds:['Metformin 500 mg · BID','Lisinopril 10 mg · AM','Acetaminophen 500 mg · PRN']},
+ {id:'YT',h:'D',room:'Rm 5',since:2024,docs:'ooooo',n:1,flags:['Self-injury'],meds:['Sertraline 50 mg · AM','Hydroxyzine 25 mg · bedtime']}
+];
+const DT=[
+ {risk:'Elopement',kind:'miss',docs:['RIT','Safety Plan'],text:'Elopement precautions are listed in the RIT but absent from the Safety Plan.',fix:'Add door-alarm check and line-of-sight steps to the Safety Plan.'},
+ {risk:'Aspiration',kind:'miss',docs:['ISP','PRMS'],text:'Texture-modified diet is in the ISP but not carried into the PRMS.',fix:'Copy the diet texture and positioning protocol into the PRMS.'},
+ {risk:'Falls',kind:'conf',docs:['RIT','ISP'],text:'Fall risk is rated high in the RIT while the ISP lists standard supervision.',fix:'Update ISP supervision level to match the RIT rating.'},
+ {risk:'Seizure',kind:'conf',docs:['PBSP','Safety Plan'],text:'Seizure response steps differ between the PBSP and the Safety Plan.',fix:'Replace Safety Plan steps with the PBSP wording, then re-date both.'},
+ {risk:'Medication refusal',kind:'miss',docs:['ISP','PBSP'],text:'Refusal protocol is written in the ISP but missing from the PBSP.',fix:'Add the two-attempt refusal protocol and notification step to the PBSP.'},
+ {risk:'Self-injury',kind:'miss',docs:['PBSP','RIT'],text:'Self-injury triggers appear in the PBSP but are not flagged in the RIT.',fix:'Add self-injury as an identified risk in the RIT with matching triggers.'}
+];
+const RISKS=DT.map(d=>d.risk);
+const STAFF=[
+ {id:'s1',name:'Priya Natarajan',role:'House Manager',h:'A',hrs:[19,24],cr:[{k:'CPR / First Aid',d:212},{k:'Background check',d:540},{k:'Med administration',d:130}]},
+ {id:'s2',name:'Marcus Bell',role:'Direct Support',h:'A',hrs:[12,24],cr:[{k:'CPR / First Aid',d:9},{k:'Background check',d:300},{k:'Med administration',d:200}]},
+ {id:'s3',name:'Tasha Okoye',role:'Direct Support',h:'A',hrs:[22,24],cr:[{k:'CPR / First Aid',d:140},{k:'Background check',d:410},{k:'Med administration',d:96}]},
+ {id:'s4',name:'Jordan Wu',role:'Direct Support',h:'A',hrs:[24,24],cr:[{k:'CPR / First Aid',d:88},{k:'Background check',d:620},{k:'Med administration',d:175}]},
+ {id:'s5',name:'Leon Hartwell',role:'House Manager',h:'B',hrs:[17,24],cr:[{k:'CPR / First Aid',d:160},{k:'Background check',d:380},{k:'Med administration',d:150}]},
+ {id:'s6',name:'Dana Ruiz',role:'Direct Support',h:'B',hrs:[9,24],cr:[{k:'CPR / First Aid',d:28},{k:'Background check',d:250},{k:'Med administration',d:-3}]},
+ {id:'s7',name:'Rosa Delgado',role:'Direct Support',h:'B',hrs:[21,24],cr:[{k:'CPR / First Aid',d:110},{k:'Background check',d:470},{k:'Med administration',d:240}]},
+ {id:'s8',name:'Aaliyah Brooks',role:'House Manager',h:'C',hrs:[14,24],cr:[{k:'CPR / First Aid',d:75},{k:'Background check',d:-12},{k:'Med administration',d:120}]},
+ {id:'s9',name:'Tom Reyes',role:'Direct Support',h:'C',hrs:[6,24],cr:[{k:'CPR / First Aid',d:5},{k:'Background check',d:330},{k:'Med administration',d:90}]},
+ {id:'s10',name:'Chidi Eze',role:'Direct Support',h:'C',hrs:[18,24],cr:[{k:'CPR / First Aid',d:190},{k:'Background check',d:280},{k:'Med administration',d:22}]},
+ {id:'s11',name:'Wendy Park',role:'Direct Support',h:'C',hrs:[20,24],cr:[{k:'CPR / First Aid',d:132},{k:'Background check',d:510},{k:'Med administration',d:300}]},
+ {id:'s12',name:'Imani Clarke',role:'House Manager',h:'D',hrs:[24,24],cr:[{k:'CPR / First Aid',d:260},{k:'Background check',d:700},{k:'Med administration',d:210}]},
+ {id:'s13',name:'Victor Nguyen',role:'Direct Support',h:'D',hrs:[21,24],cr:[{k:'CPR / First Aid',d:150},{k:'Background check',d:430},{k:'Med administration',d:180}]},
+ {id:'s14',name:'Sofia Marchetti',role:'Direct Support',h:'D',hrs:[23,24],cr:[{k:'CPR / First Aid',d:97},{k:'Background check',d:380},{k:'Med administration',d:240}]}
+];
+const resOf=id=>RES.find(r=>r.id===id);
+RES.forEach((r,ri)=>{r.d=[];for(let k=0;k<r.n;k++){const t=DT[(ri+k)%6];r.d.push({...t,id:r.id+'-'+k,res:r.id,done:false})}});
+const care={};
+RES.forEach((r,ri)=>{care[r.id]=DOCS.map((dn,i)=>{
+  const st=r.docs[i],ver=st==='m'?0:1+((ri+i)%4);
+  const age=st==='d'?340:6+((ri*7+i*11)%80);
+  const vers=[];for(let v=ver;v>=1;v--)vers.push({v,date:addD(-age-(ver-v)*60),by:v===ver?'Compliance Team':'Facility staff',note:v===1?'Initial upload':'Scheduled review'});
+  return {st,ver,upd:addD(-age),by:'Compliance Team',vers,prev:st}})});
+const TTYPES=['MAR','ONA','Safety Plan'];
+const BAD={A:{'LH:MAR':'missing'},B:{'JP:MAR':'missing','CW:ONA':'rejected'},C:{'TG:MAR':'missing','OL:MAR':'rejected','SF:ONA':'missing','TG:Safety Plan':'missing','OL:Safety Plan':'rejected'},D:{'CJ:ONA':'missing'}};
+const track=[];let tn=0;
+RES.forEach((r,ri)=>TTYPES.forEach((ty,ti)=>{
+  const bad=BAD[r.h][r.id+':'+ty],st=bad||'verified';
+  const slug=ty.replace(' ','');
+  const upd=addD(-(1+((ri+ti*3)%8)));
+  track.push({id:'t'+(++tn),res:r.id,type:ty,st,prev:st,stage:'',
+    file:st==='missing'?'':st==='rejected'?`${slug}_${r.id}_2026-09_unsigned.pdf`:`${slug}_${r.id}_2026-09.pdf`,
+    ver:st==='missing'?0:1,upd,by:st==='verified'?'Facility staff':'Facility staff',
+    vers:st==='verified'?[{v:1,date:upd,by:'Facility staff',note:'Passed gatekeeper'}]:[],
+    fields:st==='rejected'?['Staff signature (p.2)','Date of review']:[]});
+}));
+function scoreH(h){
+  const rs=RES.filter(r=>r.h===h),w={o:1,d:.6,x:.5,m:0,p:.6,arch:0};
+  const docs=avg(rs.flatMap(r=>care[r.id].map(c=>w[c.st]??0)))*100;
+  const tr=track.filter(t=>resOf(t.res).h===h&&t.st!=='archived');
+  const ok=t=>t.st==='verified'||(t.st==='processing'&&t.prev==='verified');
+  const trk=tr.length?tr.filter(ok).length/tr.length*100:100;
+  const risk=Math.max(0,100-3*rs.reduce((n,r)=>n+r.d.filter(x=>!x.done).length,0));
+  const cr=STAFF.filter(s=>s.h===h).flatMap(s=>s.cr);
+  const staff=cr.length?cr.filter(c=>c.d>30).length/cr.length*100:100;
+  return {docs:Math.round(docs),trk:Math.round(trk),risk,staff:Math.round(staff),total:Math.round(.3*docs+.3*trk+.25*risk+.15*staff)};
+}
+const tier=s=>s>=85?['good','Audit ready']:s>=70?['warn','Watch']:['bad','At risk'];
+const sevOf=s=>s<60?'critical':s<70?'high':s<85?'watch':'clear';
+/*DATA-END*/
+const CMS=[
+ {name:'Denise Whitfield',org:'Tri-County Community Services',phone:'(503) 555-0142'},
+ {name:'Omar Haddad',org:'Valley Support Services',phone:'(503) 555-0187'},
+ {name:'Lena Kowalski',org:'Tri-County Community Services',phone:'(503) 555-0119'},
+ {name:'Reggie Fontaine',org:'Valley Support Services',phone:'(971) 555-0163'},
+ {name:'Mei-Ling Tran',org:'Metro Brokerage Partners',phone:'(971) 555-0128'}
+];
+const GUARD=['Helen Brandt (mother)','Samuel Okafor (brother)','Public guardian office','Paul Lindqvist (father)','Court-appointed guardian, Carver & Reyes LLP'];
+const SUPPORT=[
+ 'Communicates in short phrases and picture cards. Prefers a quiet morning and one-step instructions.',
+ 'Uses a walker indoors. Needs a standby helper on stairs and in the shower.',
+ 'Enjoys music and cooking tasks. Becomes anxious in crowded places, so outings are planned ahead.',
+ 'Eats best with a consistent meal order and a visual schedule. Staff cue transitions five minutes early.',
+ 'Independent with most daily tasks. Needs reminders for medications and appointments.',
+ 'Communicates with gestures and a tablet. Needs line-of-sight supervision in common areas.'
+];
+const INCI={ZB:['Incident report: attempted exit during a community outing, redirected, no injury',-18],MK:['Incident report: slip in hallway, no injury, fall protocol followed',-41],CW:['Incident report: attempted exit at front door, door alarm worked',-9],TG:['Incident report: distress episode in the evening, de-escalated, no medical care needed',-14],OL:['Incident report: declined evening medication twice, manager notified',-6]};
+RES.forEach((r,ri)=>{r.cm=ri%5;r.gd=(ri+2)%5;r.sp=ri%6;r.ev=[
+ {d:addD(-(20+ri*3)),t:'Case manager review meeting held',by:CMS[r.cm].name,k:''},
+ {d:addD(-(35+ri)),t:`Prescriber review: ${r.meds[0].split(' · ')[0]} continued`,by:'House manager',k:''}];
+ if(INCI[r.id])r.ev.push({d:addD(INCI[r.id][1]),t:INCI[r.id][0],by:'House manager',k:'b'})});
+let incN=10;
+let INC=[
+ {id:'in1',res:'ZB',doc:'PBSP',ver:4,cm:0,rec:-1,st:'ready',x:['Plan period Nov 1, 2026 to Oct 31, 2027','Supervision: line of sight in common areas','Adds elopement trigger: transitions to community outings','Replaces crisis step 3']},
+ {id:'in2',res:'CW',doc:'RIT',ver:3,cm:2,rec:-2,st:'ready',x:['Fall risk rated high','Elopement risk rated moderate','Adds night checks every 2 hours']},
+ {id:'in3',res:'DN',doc:'ISP',ver:6,cm:1,rec:-3,st:'ready',x:['Plan period Dec 1, 2026 to Nov 30, 2027','Evening routine unchanged','Adds a weekly community outing on Thursdays']},
+ {id:'in4',res:'MK',doc:'ISP',ver:3,cm:3,rec:-16,st:'accepted',x:['Plan period Sep 1, 2026 to Aug 31, 2027']},
+ {id:'in5',res:'RT',doc:'RIT',ver:2,cm:4,rec:-24,st:'accepted',x:['No risk changes']},
+ {id:'in6',res:'AS',doc:'PBSP',ver:2,cm:0,rec:-30,st:'accepted',x:['Texture-modified diet carried into plan']}
+];
+const INCQ=[['LH','ISP'],['KM','RIT'],['NB','PBSP'],['SF','ISP'],['JP','ISP'],['EV','RIT']];
+/* medication administration records, September 2026 */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const sched=m=>{const q=m.split(' · ')[1]||'';return /PRN/.test(q)?['As needed']:/TID/.test(q)?['8:00 AM','2:00 PM','8:00 PM']:/BID/.test(q)?['8:00 AM','8:00 PM']:/bedtime|PM|HS/i.test(q)?['9:00 PM']:['8:00 AM']};
+const MAR={};
+RES.forEach((r,ri)=>{
+  const rnd=mulberry(1000+ri*17),tr=track.find(t=>t.res===r.id&&t.type==='MAR');
+  const gap=tr.st==='missing'?7:tr.st==='rejected'?4:0,gd=new Set();
+  while(gd.size<gap)gd.add(1+Math.floor(rnd()*30));
+  const pr=r.flags.includes('Medication refusal')?.1:.012;
+  MAR[r.id]=[];
+  r.meds.forEach(m=>sched(m).forEach(tm=>{
+    const days=[];
+    for(let d=1;d<=30;d++){
+      if(tm==='As needed'){days.push(rnd()<.1?'g':'-');continue}
+      if(gd.has(d)&&rnd()<.75){days.push('x');continue}
+      const q=rnd();days.push(q<pr?'r':q<pr+.012?'h':'g');
+    }
+    MAR[r.id].push({med:m.split(' · ')[0],time:tm,days});
+  }));
+});
+
+const state={role:'client',page:'dashboard',house:'all',resView:'people',trkType:'All',sev:'All',harm:'ZB',ins:null,prevIns:null,menu:false,marRes:'ZB',resId:'ZB',tour:null};
+const CLIENT_NAV=[['dashboard','dash','Overview'],['residents','users','Residents'],['meds','pill','Medications'],['tracking','cal','Monthly tracking'],['staff','shield','Staff credentials'],['harmonizer','merge','Risk harmonizer'],['audit','gauge','Audit readiness'],['copilot','chat','Protocol copilot']];
+const AGENCY_NAV=[['control','build','Control center'],['queue','inbox','Approval queue']];
+const TITLES={dashboard:'Overview',residents:'Residents',meds:'Medications',resident:'Resident',tracking:'Monthly tracking',staff:'Staff credentials',harmonizer:'Risk harmonizer',audit:'Audit readiness',copilot:'Protocol copilot',control:'Control center',queue:'Approval queue'};
+let ACT=[
+ {who:'Gatekeeper',text:'Read PBSP v4 from case manager Denise Whitfield for Resident ZB. Ready for review.',when:'Oct 9, 3:20 PM',k:'',ic:'inbox'},
+ {who:'Compliance Team',text:'Synced 18 risk discrepancies for Resident ZB across the RIT, ISP and Safety Plan.',when:'Oct 6',k:'g',ic:'merge'},
+ {who:'Gatekeeper',text:'Verified September MAR for Resident DN. Signatures and dates complete.',when:'Oct 8, 4:12 PM',k:'g',ic:'check'},
+ {who:'Gatekeeper',text:'Rejected September ONA for Resident CW. Staff signature and review date missing.',when:'Oct 8, 9:40 AM',k:'b',ic:'alert'},
+ {who:'Credential Tracker',text:'Sent 15-day CPR reminder to Marcus Bell by SMS.',when:'Oct 7, 8:00 AM',k:'w',ic:'bell'},
+ {who:'Compliance Team',text:'Reviewed PBSP v3 for Resident ZB and flagged 4 open discrepancies for sync.',when:'Oct 7, 8:14 AM',k:'',ic:'file'},
+ {who:'Credential Tracker',text:'Blocked scheduling for Dana Ruiz until medication administration is renewed.',when:'Oct 6, 8:00 AM',k:'b',ic:'shield'},
+ {who:'Audit Simulator',text:'Weekly simulated audit finished for all four houses.',when:'Oct 5, 6:00 AM',k:'',ic:'gauge'},
+ {who:'Compliance Team',text:'Reviewed 6 drafted fixes for Resident AS and approved all of them.',when:'Oct 4',k:'g',ic:'check'},
+ {who:'Gatekeeper',text:'Rejected September Safety Plan for Resident OL. Review date missing.',when:'Oct 4, 11:05 AM',k:'b',ic:'alert'},
+ {who:'Credential Tracker',text:'Sent 30-day CPR reminder to Dana Ruiz by email.',when:'Sep 28, 8:00 AM',k:'w',ic:'bell'},
+ {who:'Compliance Team',text:'Added Resident YT to Dogwood Place and built the starting file checklist.',when:'Sep 24',k:'',ic:'users'},
+ {who:'Audit Simulator',text:'Cascade Court dropped below 70 after two monthly files were rejected.',when:'Sep 22',k:'b',ic:'gauge'},
+ {who:'Compliance Team',text:'Aligned the medication refusal protocol for Resident JP across the ISP and PBSP.',when:'Sep 19',k:'g',ic:'merge'}
+];
+let QUEUE=[
+ {id:'q1',client:'Cedar Grove Care',res:'TG',house:'Cascade Court',type:'Risk draft',conf:94,age:'12 min',sync:'TG',text:'Add elopement precautions to the Safety Plan and PBSP, flag self-injury in the RIT.',detail:['Source: RIT v2 (Jul 14)','Targets: Safety Plan, PBSP, RIT','6 discrepancies resolved if approved']},
+ {id:'q2',client:'Harbor & Pine Homes',res:'KL',house:'North House',type:'Cross-reference',conf:88,age:'31 min',text:'ISP supervision level conflicts with RIT fall rating.',detail:['Source: RIT v3 (Sep 2)','Target: ISP §4','Proposed: raise supervision to line-of-sight']},
+ {id:'q3',client:'Northgate Supported Living',res:'PW',house:'Ridge Court',type:'Risk draft',conf:91,age:'48 min',text:'Carry texture-modified diet from ISP into PRMS and Safety Plan.',detail:['Source: ISP v2 (Aug 20)','Targets: PRMS, Safety Plan']},
+ {id:'q4',client:'Cedar Grove Care',res:'OL',house:'Cascade Court',type:'Risk draft',conf:86,age:'1 h',sync:'OL',text:'Align medication refusal protocol across ISP and PBSP.',detail:['Source: ISP v1 (Nov 3)','Target: PBSP','5 discrepancies resolved if approved']},
+ {id:'q5',client:'Willow Bend Residential',res:'AC',house:'Main House',type:'Cross-reference',conf:79,age:'2 h',text:'Seizure response steps differ between PBSP and Safety Plan.',detail:['Source: PBSP v2','Target: Safety Plan §2','Lower confidence: review wording']},
+ {id:'q6',client:'Ironwood Residential',res:'HT',house:'House 3',type:'Cross-reference',conf:93,age:'3 h',text:'Self-injury triggers present in PBSP but not in RIT.',detail:['Source: PBSP v4','Target: RIT']}
+];
+const CLIENTS=[
+ ['Cedar Grove Care',4,null,0,'Today'],['Harbor & Pine Homes',4,48,31,'Today'],['Northgate Supported Living',5,57,27,'Today'],['Ironwood Residential',5,63,19,'Yesterday'],
+ ['Willow Bend Residential',2,68,12,'Today'],['Sunridge Care Group',4,74,9,'Yesterday'],['Evergreen Haven',3,79,7,'Today'],['Tidewater Homes',2,82,5,'Oct 8'],
+ ['Quarry Hill Homes',3,88,3,'Today'],['Marlow Family Homes',1,91,2,'Oct 8'],['Bellmont Care',2,94,1,'Today'],['Foxglove Lane LLC',1,97,0,'Oct 7']
+];
+
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const tag=(c,t,x='')=>`<span class="tag ${c} ${x}">${esc(t)}</span>`;
+const scope=h=>state.house==='all'||state.house===h;
+const openDisc=r=>r.d.filter(x=>!x.done).length;
+const sessionEl=()=>$('#content');
+
+/* ---------- activity and toasts ---------- */
+function act(who,text,k='',icn='check'){ACT.unshift({who,text,when:'Just now',k,ic:icn})}
+let TID=0;const TFN={};
+function toast(msg,o={}){
+  const id=++TID,el=document.createElement('div');el.className='toast';el.dataset.t=id;
+  el.innerHTML=ic(o.icon||'check','s')+`<span>${esc(msg)}</span>`+(o.action?`<button data-act="toast-act" data-id="${id}">${esc(o.action.label)}</button>`:'');
+  if(o.action)TFN[id]=o.action.fn;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.remove();delete TFN[id]},o.action?7000:4500);
+}
+
+/* ---------- upload simulation ---------- */
+const detectType=n=>/safety/i.test(n)?'Safety Plan':/\bona\b|ona[_\-. ]|[_\-. ]ona/i.test(n)?'ONA':/\bmar\b|mar[_\-. ]|[_\-. ]mar/i.test(n)?'MAR':null;
+const isBad=n=>/unsigned|incomplete|blank/i.test(n);
+function gate(row,fileName){
+  row.prev=row.st==='processing'?row.prev:row.st;row.st='processing';row.stage='Reading text (OCR)';render();
+  setTimeout(()=>{row.stage='Checking signature blocks';render()},700);
+  setTimeout(()=>{row.stage='Matching document type';render()},1300);
+  setTimeout(()=>{
+    const det=detectType(fileName),r=resOf(row.res);let fields=[];
+    if(!/\.pdf$/i.test(fileName))fields=['File is not a PDF'];
+    else if(det&&det!==row.type)fields=[`Reads as ${det}, row expects ${row.type}`];
+    else if(isBad(fileName))fields=['Staff signature (p.2)','Date of review'];
+    if(fields.length){
+      row.st='rejected';row.file=fileName;row.fields=fields;
+      act('Gatekeeper',`Rejected ${row.type} for Resident ${row.res}. ${fields.join(', ')}.`,'b','alert');
+      toast(`Rejected: ${row.type} for ${row.res}. ${fields[0]}`,{icon:'alert',action:{label:'View',fn:()=>openIns({kind:'doc',id:row.id})}});
+    }else{
+      row.st='verified';row.ver++;row.file=fileName;row.fields=[];row.upd=new Date(TODAY);row.by='Facility staff';
+      row.vers.unshift({v:row.ver,date:new Date(TODAY),by:'Facility staff',note:'Passed gatekeeper'});
+      act('Gatekeeper',`Verified ${row.type} for Resident ${row.res}. Signatures and dates complete.`,'g','check');
+      toast(`Verified: ${row.type} for ${row.res}`);
+    }
+    row.stage='';render();
+  },1900);
+}
+function gateCare(rid,i,fileName){
+  const c=care[rid][i];
+  if(!/\.pdf$/i.test(fileName)){toast(`Rejected: ${fileName} is not a PDF`,{icon:'alert'});return}
+  c.prev=c.st;c.st='p';render();
+  setTimeout(()=>{
+    c.st='o';c.ver++;c.upd=new Date(TODAY);c.by='Facility staff';c.vers.unshift({v:c.ver,date:new Date(TODAY),by:'Facility staff',note:'Replaced file'});
+    act('Gatekeeper',`Verified ${DOCS[i]} for Resident ${rid}.`,'g','check');
+    toast(`Verified: ${DOCS[i]} for ${rid}`);render();
+    setTimeout(()=>{const n=openDisc(resOf(rid));toast(`Harmonizer re-checked ${rid}: ${n?n+' open discrepancies':'all documents agree'}`,{icon:'merge'})},900);
+  },1600);
+}
+function syncRes(id){
+  const r=resOf(id),open=r.d.filter(x=>!x.done);if(!open.length)return 0;
+  open.forEach(x=>x.done=true);care[id].forEach(c=>{if(c.st==='x')c.st='o'});
+  act('Compliance Team',`Synced ${open.length} risk discrepancies for Resident ${id}.`,'g','merge');return open.length;
+}
+let target=null;
+const trackRows=()=>track.filter(t=>t.st!=='archived'&&scope(resOf(t.res).h));
+function handleFile(file,tg){
+  const name=file.name;
+  if(tg&&tg.kind==='track'){gate(track.find(t=>t.id===tg.id),name);return}
+  if(tg&&tg.kind==='care'){gateCare(tg.id,tg.i,name);return}
+  const det=detectType(name);
+  if(!det){toast('Gatekeeper could not tell the document type. Rename with MAR, ONA or Safety.',{icon:'alert'});return}
+  const rows=trackRows().filter(t=>t.type===det);
+  const row=rows.find(t=>t.st==='missing'||t.st==='rejected')||rows[0];
+  if(!row){toast('No matching row in this view',{icon:'alert'});return}
+  const m=name.match(/_([A-Z]{2})_/);const hit=m&&rows.find(t=>t.res===m[1]);
+  gate(hit||row,name);
+}
+
+/* ---------- views ---------- */
+function sideHTML(){
+  const nav=state.role==='client'?CLIENT_NAV:AGENCY_NAV;
+  const stf=STAFF.flatMap(s=>s.cr).filter(c=>c.d<0).length;
+  const busy=track.filter(t=>t.st==='processing').length+Object.values(care).flat().filter(c=>c.st==='p').length;
+  const cnt=p=>p==='residents'&&INC.some(x=>x.st==='ready')?`<span class="ct n">${INC.filter(x=>x.st==='ready').length}</span>`:p==='staff'&&stf?`<span class="ct">${stf}</span>`:p==='queue'?`<span class="ct n">${QUEUE.length}</span>`:p==='tracking'?(()=>{const n=trackRows().filter(t=>t.st==='rejected').length;return n?`<span class="ct">${n}</span>`:''})():'';
+  return `<div class="brand"><span class="mark">${ic('shield')}</span>Wardwell</div>
+  <div class="seg" role="group" aria-label="View"><button data-act="role" data-id="client" class="${state.role==='client'?'on':''}">Client</button><button data-act="role" data-id="agency" class="${state.role==='agency'?'on':''}">Agency</button></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><button class="qs" data-act="pal">${ic('search','s')}<span>Search</span><kbd>⌘K</kbd></button><button class="qs" data-act="tour-start">${ic('play','s')}<span>Guided demo</span></button></div>
+  <nav class="nav" aria-label="Sections"><div class="lab">${state.role==='client'?'Cedar Grove Care':'Back office'}</div>
+  ${nav.map(([p,i,l])=>`<button data-act="nav" data-id="${p}" class="${(state.page===p||(p==='residents'&&state.page==='resident'))?'on':''}" ${(state.page===p||(p==='residents'&&state.page==='resident'))?'aria-current="page"':''}>${ic(i)}${l}${cnt(p)}</button>`).join('')}</nav>
+  <div class="sidefoot"><div class="live"><span class="dot ${busy?'busy':''}"></span>${busy?`${busy} file${busy>1?'s':''} processing`:'All agents idle'}</div>
+  <div class="who"><span class="av">${state.role==='client'?'MA':'CT'}</span><div><b>${state.role==='client'?'Maria Alvarez':'Compliance Team'}</b><small>${state.role==='client'?'Owner':'Back office'}</small></div></div></div>`;
+}
+function topHTML(){
+  const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+  const hs=state.role==='client'&&['dashboard','residents','meds','tracking','staff','harmonizer','audit'].includes(state.page)?`<div class="hseg" role="group" aria-label="House"><button data-act="house" data-id="all" class="${state.house==='all'?'on':''}">All houses</button>${Object.entries(H).map(([k,v])=>`<button data-act="house" data-id="${k}" class="${state.house===k?'on':''}">${v}</button>`).join('')}</div>`:'';
+  return `<button class="ib menu" data-act="menu" aria-label="Open menu">${ic('menu')}</button>
+  <div class="grow"><div class="crumb">${state.role==='client'?'Cedar Grove Care':'Agency'}</div><h2>${state.page==='resident'?'Resident '+state.resId:TITLES[state.page]}</h2></div>${hs}
+  <button class="ib" data-act="bell" aria-label="Notifications" title="Notifications">${ic('bell')}</button>
+  <button class="ib" data-act="theme" aria-label="Toggle theme" title="Toggle theme">${ic(dark?'sun':'moon')}</button>`;
+}
+function houseCard(h){
+  const s=scoreH(h),[c,l]=tier(s.total),rs=RES.filter(r=>r.h===h);
+  const issues=rs.reduce((n,r)=>n+openDisc(r),0)+track.filter(t=>resOf(t.res).h===h&&(t.st==='missing'||t.st==='rejected')).length;
+  const m=(lab,v)=>{const t=tier(v)[0];return `<div class="mrow"><span>${lab}</span><div class="meter ${t}" style="--v:${v}"><span class="f"></span></div><span class="num" style="text-align:right">${v}</span></div>`};
+  return `<div class="card"><div class="card-b hc">
+  <div class="hc-top"><div><h2>${H[h]}</h2><div class="dim2" style="font-size:12.5px">${rs.length} of ${BEDS[h]} beds filled</div></div>${tag(c,l)}</div>
+  <div><div class="score">${s.total}<small>%</small></div>
+  <div class="meter ${c}" style="--v:${s.total};margin-top:10px"><span class="f"></span><i style="left:70%"></i><i style="left:85%"></i></div></div>
+  <div style="display:flex;flex-direction:column;gap:8px">${m('Care documents',s.docs)}${m('Monthly tracking',s.trk)}${m('Risk consistency',s.risk)}${m('Staff credentials',s.staff)}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><span class="dim2" style="font-size:12.5px">${issues} open item${issues===1?'':'s'}</span><button class="btn sm" data-act="house-open" data-id="${h}">Open house ${ic('chev','s')}</button></div></div></div>`;
+}
+function attention(){
+  const out=[];
+  STAFF.filter(s=>scope(s.h)).forEach(s=>s.cr.forEach(c=>{if(c.d<0)out.push({sev:'b',t:`${s.name}: ${c.k} expired`,m:`${H[s.h]} · expired ${-c.d} days ago · scheduling blocked`,a:{kind:'staff',id:s.id}});else if(c.d<=15)out.push({sev:'w',t:`${s.name}: ${c.k} due in ${c.d} days`,m:`${H[s.h]} · reminders on schedule`,a:{kind:'staff',id:s.id}})}));
+  trackRows().filter(t=>t.st==='rejected').forEach(t=>out.push({sev:'b',t:`${t.type} rejected for Resident ${t.res}`,m:`${H[resOf(t.res).h]} · ${t.fields.join(', ')}`,a:{kind:'doc',id:t.id}}));
+  RES.filter(r=>scope(r.h)&&openDisc(r)>=3).forEach(r=>out.push({sev:'w',t:`${openDisc(r)} open risk discrepancies for Resident ${r.id}`,m:`${H[r.h]} · compliance team has a sync drafted`,a:{kind:'res',id:r.id,tab:'risks'}}));
+  INC.filter(x=>x.st==='ready'&&scope(resOf(x.res).h)).forEach(x=>out.push({sev:'w',t:`${x.doc} v${x.ver} from ${CMS[x.cm].name} needs review`,m:`Resident ${x.res} · ${H[resOf(x.res).h]} · received ${fmtS(addD(x.rec))}`,a:{kind:'inc',id:x.id}}));
+  return out.sort((a,b)=>(a.sev==='b'?0:1)-(b.sev==='b'?0:1)).slice(0,8);
+}
+function dashboard(){
+  const hs=Object.keys(H).filter(scope),rs=RES.filter(r=>scope(r.h)),sf=STAFF.filter(s=>scope(s.h));
+  const cr=sf.flatMap(s=>s.cr),exp=cr.filter(c=>c.d<0).length,soon=cr.filter(c=>c.d>=0&&c.d<=30).length;
+  const meds=rs.reduce((n,r)=>n+r.meds.length,0),late=trackRows().filter(t=>t.type==='MAR'&&t.st!=='verified').length;
+  const files=rs.flatMap(r=>care[r.id]),good=files.filter(c=>c.st==='o').length;
+  const A=ACT.slice(0,7);
+  const att=attention();
+  return `<div class="ph"><div><h1>Audit readiness, ${state.house==='all'?'all houses':H[state.house]}</h1><p>September records, as of ${fmt(TODAY)}. Scores update as files are verified.</p></div></div>
+  <div class="g3">
+   <div class="card"><div class="card-b stat"><div class="eyebrow">Active residents</div><div class="big">${rs.length}</div>
+     ${hs.map(h=>`<div class="row"><span>${H[h]}</span><span class="num">${RES.filter(r=>r.h===h).length} of ${BEDS[h]}</span></div>`).join('')}
+     <div class="row"><span>Care files current</span><span class="num">${good} of ${files.length}</span></div></div></div>
+   <div class="card"><div class="card-b stat"><div class="eyebrow">Staff credentials</div><div class="big">${sf.length}<small>staff</small></div>
+     <div class="row"><span>Expired</span><span>${exp?tag('bad',exp+' expired'):tag('good','None')}</span></div>
+     <div class="row"><span>Due within 30 days</span><span>${soon?tag('warn',soon+' due'):tag('good','None')}</span></div>
+     <div class="row"><span>Scheduling blocked</span><span class="num">${sf.filter(s=>s.cr.some(c=>c.d<0)).length}</span></div></div></div>
+   <div class="card"><div class="card-b stat"><div class="eyebrow">Active medications</div><div class="big">${meds}</div>
+     <div class="row"><span>Residents on medication</span><span class="num">${rs.length}</span></div>
+     <div class="row"><span>September MARs outstanding</span><span>${late?tag('warn',late+' open'):tag('good','All in')}</span></div>
+     <div class="row"><span>PRN orders</span><span class="num">${rs.reduce((n,r)=>n+r.meds.filter(m=>/PRN/.test(m)).length,0)}</span></div></div></div>
+  </div>
+  <div class="card"><div class="card-h"><h2>Audit readiness by house</h2><div class="legend"><span><i></i>70 watch</span><span><i></i>85 audit ready</span></div></div>
+   <div class="card-b"><div class="g3" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">${hs.map(houseCard).join('')}</div></div></div>
+  <div class="cols">
+   <div class="card"><div class="card-h"><h2>Needs attention</h2><span class="dim2" style="font-size:12.5px">${att.length} item${att.length===1?'':'s'}</span></div>
+    ${att.length?att.map((a,i)=>`<button class="att" data-act="att" data-i="${i}"><span class="sev ${a.sev==='b'?'b':''}"></span><span><b>${esc(a.t)}</b><small>${esc(a.m)}</small></span>${ic('chev','s')}</button>`).join(''):`<div class="card-b dim2">Nothing needs attention in this view.</div>`}</div>
+   <div class="card"><div class="card-h"><h2>Work done by your compliance team</h2></div>
+    <ul class="feed">${A.map(a=>`<li><span class="ico ${a.k}">${ic(a.ic,'s')}</span><div><p><b>${esc(a.who)}</b> ${esc(a.text)}</p><small>${esc(a.when)}</small></div></li>`).join('')}</ul></div>
+  </div>`;
+}
+const docChip=(c,i)=>{const m={o:['good','✓'],d:['warn','!'],m:['bad','–'],x:['bad','≠'],p:['info','…'],arch:['','x']}[c.st];return `<span class="tag ${m[0]} nd" title="${DOCS[i]}: ${docLabel(c.st)}" style="height:20px;padding:0 6px;font-family:var(--mono);font-weight:500">${['RIT','ISP','PRMS','SAF','PBSP'][i]}</span>`};
+const docLabel=s=>({o:'Current',d:'Review due',m:'Missing',x:'Conflict',p:'Processing PDF…',arch:'Archived'}[s]);
+const docTag=s=>({o:tag('good','Current'),d:tag('warn','Review due'),m:tag('bad','Missing'),x:tag('bad','Conflict'),p:tag('info','Processing PDF…','proc'),arch:tag('','Archived')}[s]);
+function fileActs(rid,i){
+  const c=care[rid][i];
+  if(c.st==='p')return `<span class="dim2" style="font-size:12px">Reading…</span>`;
+  if(c.st==='arch')return `<button class="btn sm" data-act="care-restore" data-id="${rid}" data-i="${i}">Restore</button>`;
+  if(c.st==='m')return `<button class="btn sm pri" data-act="care-upload" data-id="${rid}" data-i="${i}">${ic('upload','s')}Upload</button>`;
+  return `<span class="acts"><button class="ib" data-act="care-upload" data-id="${rid}" data-i="${i}" aria-label="Replace file" title="Replace file">${ic('replace','s')}</button><button class="ib" data-act="care-hist" data-id="${rid}" data-i="${i}" aria-label="Version history" title="Version history">${ic('history','s')}</button><button class="ib" data-act="care-arch" data-id="${rid}" data-i="${i}" aria-label="Archive" title="Archive">${ic('archive','s')}</button></span>`;
+}
+function residents(){
+  const rs=RES.filter(r=>scope(r.h));
+  const seg=`<div class="hseg" role="group" aria-label="Residents view"><button data-act="resview" data-id="people" class="${state.resView==='people'?'on':''}">Residents</button><button data-act="resview" data-id="files" class="${state.resView==='files'?'on':''}">Care files</button><button data-act="resview" data-id="incoming" class="${state.resView==='incoming'?'on':''}">Incoming${INC.some(x=>x.st==='ready')?' ('+INC.filter(x=>x.st==='ready').length+')':''}</button></div>`;
+  let body;
+  if(state.resView==='incoming'){body=incomingTable()}else if(state.resView==='people'){
+    body=`<div class="tw"><table><thead><tr><th>Resident</th><th>House</th><th>Care documents</th><th>Risk flags</th><th class="r">Open</th><th class="r">Meds</th><th></th></tr></thead><tbody>
+    ${rs.map(r=>`<tr class="row" data-act="open-res" data-id="${r.id}"><td><div class="who2"><span class="av2">${r.id}</span><div class="cell2"><b>Resident ${r.id}</b><small>${r.room} · since ${r.since}</small></div></div></td>
+     <td>${H[r.h]}</td><td><span style="display:inline-flex;gap:4px">${care[r.id].map(docChip).join('')}</span></td>
+     <td>${r.flags.length?r.flags.map(f=>tag('','  '+f,'nd')).join(' '):'<span class="dim">None</span>'}</td>
+     <td class="r num">${openDisc(r)?tag('warn',openDisc(r)+' open'):'<span class="dim">0</span>'}</td><td class="r num">${r.meds.length}</td><td class="r">${ic('chev','s')}</td></tr>`).join('')}</tbody></table></div>`;
+  }else{
+    const rank={m:0,x:1,d:2,p:3,o:4,arch:5};
+    const rows=rs.flatMap(r=>care[r.id].map((c,i)=>({r,c,i}))).sort((a,b)=>rank[a.c.st]-rank[b.c.st]||a.r.id.localeCompare(b.r.id));
+    body=`<div class="tw"><table><thead><tr><th>Resident</th><th>Document</th><th>Version</th><th>Status</th><th>Updated</th><th class="r">Actions</th></tr></thead><tbody>
+    ${rows.map(({r,c,i})=>`<tr class="row ${''}" data-act="open-res" data-id="${r.id}" data-drop="care:${r.id}:${i}"><td><div class="who2"><span class="av2">${r.id}</span><div class="cell2"><b>Resident ${r.id}</b><small>${H[r.h]}</small></div></div></td>
+     <td><b>${DOCS[i]}</b></td><td class="mono">${c.ver?'v'+c.ver:'None'}</td><td>${docTag(c.st)}</td><td class="num dim2">${c.ver?fmtS(c.upd):'Not on file'}</td><td class="r">${fileActs(r.id,i)}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  return `<div class="ph"><div><h1>Residents</h1><p>${rs.length} active residents. Select a resident to open their file without leaving this page.</p></div>${seg}</div><div class="card">${body}</div>`;
+}
+function trkStatus(t){
+  if(t.st==='processing')return tag('info',t.stage||'Processing PDF…','proc');
+  if(t.st==='verified')return tag('good','Verified');
+  if(t.st==='rejected')return tag('bad','Rejected');
+  return tag('warn','Not uploaded');
+}
+function tracking(){
+  const rows=trackRows().filter(t=>state.trkType==='All'||t.type===state.trkType);
+  const rank={rejected:0,missing:1,processing:2,verified:3};
+  rows.sort((a,b)=>rank[a.st]-rank[b.st]||a.res.localeCompare(b.res));
+  const arch=track.filter(t=>t.st==='archived'&&scope(resOf(t.res).h)).length;
+  return `<div class="ph"><div><h1>Monthly tracking</h1><p>September 2026 records, due Oct 5. The Gatekeeper checks every PDF before it is accepted.</p></div></div>
+  <div class="dz" data-drop="zone"><span class="ic">${ic('upload')}</span><div class="t"><b>Drop PDFs anywhere on this card or on a row</b><small>Files are read in the background. Try a name like MAR_LH_2026-09.pdf, or ONA_CW_unsigned.pdf to see a rejection.</small></div>
+   <button class="btn sm" data-act="demo" data-id="good">Simulate good upload</button><button class="btn sm" data-act="demo" data-id="bad">Simulate unsigned upload</button></div>
+  <div class="card"><div class="card-h"><div class="chips">${['All',...TTYPES].map(x=>`<button class="chip ${state.trkType===x?'on':''}" data-act="trktype" data-id="${esc(x)}">${x}</button>`).join('')}</div><span class="dim2" style="font-size:12.5px">${rows.length} files${arch?` · ${arch} archived`:''}</span></div>
+  <div class="tw"><table><thead><tr><th>Document</th><th>File</th><th>Status</th><th>Updated</th><th class="r">Actions</th></tr></thead><tbody>
+  ${rows.map(t=>{const late=(t.st==='missing'||t.st==='rejected');
+   return `<tr class="row" data-act="open-doc" data-id="${t.id}" data-drop="track:${t.id}"><td><div class="who2"><span class="av2">${t.res}</span><div class="cell2"><b>${t.type}</b><small>Resident ${t.res} · ${H[resOf(t.res).h]}</small></div></div></td>
+   <td><div class="cell2"><span class="mono">${t.file?esc(t.file):'<span class="dim">No file</span>'}</span>${t.ver?`<small>v${t.ver}</small>`:''}${t.st==='rejected'?`<div class="fields">${t.fields.map(f=>`<span>${esc(f)}</span>`).join('')}</div>`:''}</div></td>
+   <td>${trkStatus(t)}${late?`<div class="dim2" style="font-size:12px;margin-top:4px">Overdue ${5}d</div>`:''}</td>
+   <td class="num dim2">${t.ver?fmtS(t.upd):'Not on file'}</td>
+   <td class="r">${t.st==='processing'?'<span class="dim2" style="font-size:12px">Checking…</span>':t.st==='missing'?`<button class="btn sm pri" data-act="trk-upload" data-id="${t.id}">${ic('upload','s')}Upload</button>`:`<span class="acts"><button class="ib" data-act="trk-upload" data-id="${t.id}" aria-label="Replace file" title="Replace file">${ic('replace','s')}</button><button class="ib" data-act="trk-hist" data-id="${t.id}" aria-label="Version history" title="Version history">${ic('history','s')}</button><button class="ib" data-act="trk-arch" data-id="${t.id}" aria-label="Archive" title="Archive">${ic('archive','s')}</button></span>`}</td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+const credCell=c=>{const t=c.d<0?['bad',`Expired ${-c.d}d ago`]:c.d<=7?['bad',`${c.d}d left`]:c.d<=30?['warn',`${c.d}d left`]:['good',`${c.d}d left`];return `<div class="cell2"><span class="mono">${fmtS(addD(c.d))}, ${addD(c.d).getFullYear()}</span><span>${tag(t[0],t[1])}</span></div>`};
+function remind(s){const m=Math.min(...s.cr.map(c=>c.d));if(m<0)return tag('bad','Escalated to manager');if(m>30)return '<span class="dim">None due</span>';const t=[30,15,7].filter(x=>m<=x);return t.map(x=>tag('good',x+'-day sent','')).join(' ')}
+function staff(){
+  const sf=STAFF.filter(s=>scope(s.h));
+  return `<div class="ph"><div><h1>Staff credentials</h1><p>The Credential Tracker texts and emails staff 30, 15 and 7 days before expiry, and blocks scheduling once a credential lapses.</p></div></div>
+  <div class="card"><div class="tw"><table><thead><tr><th>Staff</th><th>CPR / First Aid</th><th>Background check</th><th>Med administration</th><th>Training hours</th><th>Reminders</th><th>Scheduling</th></tr></thead><tbody>
+  ${sf.map(s=>{const blocked=s.cr.some(c=>c.d<0),pct=Math.round(s.hrs[0]/s.hrs[1]*100);return `<tr class="row" data-act="open-staff" data-id="${s.id}"><td><div class="who2"><span class="av2">${s.name.split(' ').map(x=>x[0]).join('')}</span><div class="cell2"><b>${s.name}</b><small>${s.role} · ${H[s.h]}</small></div></div></td>
+   ${s.cr.map(c=>`<td>${credCell(c)}</td>`).join('')}
+   <td style="min-width:130px"><div class="cell2"><span class="num">${s.hrs[0]} of ${s.hrs[1]} h</span><div class="meter ${pct>=75?'good':pct>=40?'warn':'bad'}" style="--v:${pct}"><span class="f"></span></div></div></td>
+   <td>${remind(s)}</td><td>${blocked?tag('bad','Blocked'):tag('good','Cleared')}</td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function matrixCell(r,risk,di){
+  if(care[r.id][di].st==='m')return `<td class="c"><span class="cellst na">No file</span></td>`;
+  const d=r.d.find(x=>!x.done&&x.risk===risk);
+  if(!d)return `<td class="c"><span class="cellst good">${ic('check','s')}Aligned</span></td>`;
+  const dn=DOCS[di];
+  if(d.docs[0]===dn)return `<td class="c"><span class="cellst good">${ic('check','s')}Source</span></td>`;
+  if(d.docs.includes(dn))return d.kind==='conf'?`<td class="c"><span class="cellst bad">${ic('alert','s')}Conflict</span></td>`:`<td class="c"><span class="cellst warn">${ic('alert','s')}Missing</span></td>`;
+  return `<td class="c"><span class="cellst good">${ic('check','s')}Aligned</span></td>`;
+}
+function harmonizer(){
+  const list=RES.filter(r=>scope(r.h));
+  if(!list.find(r=>r.id===state.harm))state.harm=list[0].id;
+  const r=resOf(state.harm),open=r.d.filter(x=>!x.done);
+  return `<div class="ph"><div><h1>Risk harmonizer</h1><p>Cross-checks the RIT, ISP, PRMS, Safety Plan and PBSP, then drafts one sync that updates every matching protocol.</p></div></div>
+  <div class="cols" style="grid-template-columns:minmax(0,260px) minmax(0,1fr)">
+   <div class="card"><div class="card-h"><h3>Residents</h3></div><div class="rlist">${list.map(x=>`<button data-act="harm" data-id="${x.id}" class="${x.id===r.id?'on':''}"><span><b>Resident ${x.id}</b><br><small class="dim">${H[x.h]}</small></span>${openDisc(x)?tag('warn',openDisc(x)+' open'):tag('good','Aligned')}</button>`).join('')}</div></div>
+   <div class="card"><div class="card-h"><div><h2>Resident ${r.id}</h2><div class="dim2" style="font-size:12.5px">${H[r.h]} · ${r.room}</div></div>${open.length?tag('warn',open.length+' discrepancies'):tag('good','All documents agree')}</div>
+    <div class="tw"><table class="mx"><thead><tr><th>Risk</th>${DOCS.map(d=>`<th class="c" style="text-align:center">${d}</th>`).join('')}</tr></thead><tbody>
+    ${RISKS.map(k=>`<tr><td><b>${k}</b></td>${DOCS.map((d,i)=>matrixCell(r,k,i)).join('')}</tr>`).join('')}</tbody></table></div>
+    <div>${open.length?open.map(d=>`<div class="dis"><div><b>${d.risk}</b><p>${d.text}</p><div class="fix">${ic('sync','s')}<span>${d.fix}</span></div></div>${tag(d.kind==='conf'?'bad':'warn',d.kind==='conf'?'Conflict':'Missing section')}</div>`).join(''):`<div class="card-b dim2">Nothing to sync. The five documents carry the same risks and protocols.</div>`}</div>
+    <div class="syncbar"><span class="dim2" style="font-size:12.5px">${open.length?`One click updates ${new Set(open.flatMap(d=>d.docs)).size} documents. A compliance reviewer approves before it reaches the client.`:'Last sync completed just now.'}</span><button class="btn pri" data-act="sync" data-id="${r.id}" ${open.length?'':'disabled'}>${ic('sync','s')}One-click sync${open.length?` (${open.length})`:''}</button></div></div>
+  </div>`;
+}
+function findings(){
+  const f=[];
+  STAFF.filter(s=>scope(s.h)).forEach(s=>s.cr.forEach(c=>{if(c.d<0)f.push({sev:'Critical',h:s.h,t:`${s.name}: ${c.k} expired ${-c.d} days ago`,w:'Staff credentials',a:{kind:'staff',id:s.id}})}));
+  trackRows().forEach(t=>{if(t.st==='missing')f.push({sev:'High',h:resOf(t.res).h,t:`${t.type} not on file for Resident ${t.res}`,w:'Monthly tracking',a:{kind:'doc',id:t.id}});if(t.st==='rejected')f.push({sev:'High',h:resOf(t.res).h,t:`${t.type} for Resident ${t.res} rejected: ${t.fields[0]}`,w:'Monthly tracking',a:{kind:'doc',id:t.id}})});
+  RES.filter(r=>scope(r.h)).forEach(r=>{if(openDisc(r))f.push({sev:openDisc(r)>=4?'High':'Medium',h:r.h,t:`${openDisc(r)} risk discrepancies across care documents for Resident ${r.id}`,w:'Risk consistency',a:{kind:'res',id:r.id,tab:'risks'}});care[r.id].forEach((c,i)=>{if(c.st==='m')f.push({sev:'High',h:r.h,t:`${DOCS[i]} missing for Resident ${r.id}`,w:'Care documents',a:{kind:'res',id:r.id,tab:'files'}});if(c.st==='d')f.push({sev:'Medium',h:r.h,t:`${DOCS[i]} review overdue for Resident ${r.id}`,w:'Care documents',a:{kind:'res',id:r.id,tab:'files'}})})});
+  const o={Critical:0,High:1,Medium:2};return f.sort((a,b)=>o[a.sev]-o[b.sev]);
+}
+function audit(){
+  const hs=Object.keys(H).filter(scope),fs=findings();
+  const sv={Critical:'bad',High:'warn',Medium:''};
+  return `<div class="ph"><div><h1>Audit readiness</h1><p>A simulated state licensing audit built from document completeness, tracking completion, risk consistency and staff credentials. It is a forecast, not a state finding.</p></div></div>
+  <div class="g3">${hs.map(h=>{const s=scoreH(h),[c,l]=tier(s.total);const out=s.total>=85?'Likely to pass':s.total>=70?'Likely conditions':'Likely citations';return `<div class="card"><div class="card-b hc"><div class="hc-top"><div><h2>${H[h]}</h2><div class="dim2" style="font-size:12.5px">${out}</div></div>${tag(c,l)}</div><div class="score">${s.total}<small>%</small></div><div class="meter ${c}" style="--v:${s.total}"><span class="f"></span><i style="left:70%"></i><i style="left:85%"></i></div>
+   <div class="dim2" style="font-size:12.5px">Weights: documents 30, tracking 30, risk 25, staff 15</div></div></div>`}).join('')}</div>
+  <div class="card"><div class="card-h"><h2>Findings an inspector would likely write up</h2><span class="dim2" style="font-size:12.5px">${fs.length} findings</span></div>
+  <div class="tw"><table><thead><tr><th>Severity</th><th>House</th><th>Finding</th><th>Area</th></tr></thead><tbody>
+  ${fs.slice(0,14).map((x,i)=>`<tr class="row" data-act="finding" data-i="${i}"><td>${tag(sv[x.sev],x.sev)}</td><td>${H[x.h]}</td><td>${esc(x.t)}</td><td class="dim2">${x.w}</td></tr>`).join('')||`<tr><td colspan="4" class="dim2">No findings in this view.</td></tr>`}</tbody></table></div></div>`;
+}
+const CHAT=[{w:'b',t:'Hi, I am the Protocol Copilot. I only answer from approved care plans and state guidelines. Who are you supporting?'}];
+let chat=CHAT.slice();
+const REPLIES=[
+ [/evening|routine|bed/i,'Evening routine for Resident DN\n6:00 dinner, seated upright\n7:00 quiet activity, screens off by 8:00\n8:30 evening Levetiracetam. Check the MAR first.\n9:00 hygiene, door left ajar\n9:30 bed, seizure monitor on',['DN · ISP v3 §4.2','Safety Plan §2']],
+ [/seiz/i,'If DN has a seizure, note the start time, move hard objects away, cushion the head and turn DN on their side. Do not restrain or put anything in the mouth. Call 911 if it lasts longer than 5 minutes, then notify the house manager.',['DN · Safety Plan §2','State guideline']],
+ [/refus|won.?t take|decline/i,'If Resident ZB declines a medication, wait 10 minutes and offer once more. If still declined, do not insist. Record Refused on the MAR and tell the house manager the same shift.',['ZB · ISP v4 §6','State guideline']]
+];
+const SUGG=['Evening routine for DN','What if ZB refuses meds?','DN seizure steps','Can DN have a snack at 11 PM?'];
+function ask(q){
+  chat.push({w:'u',t:q});render();
+  setTimeout(()=>{const hit=REPLIES.find(r=>r[0].test(q));
+    chat.push(hit?{w:'b',t:hit[1],s:hit[2]}:{w:'b',t:'I cannot find that in the approved care plans or state guidelines I am limited to. Please ask your house manager. I logged this question for the compliance team.'});
+    render();const m=$('.msgs');if(m)m.scrollTop=m.scrollHeight},650);
+  const m=$('.msgs');if(m)m.scrollTop=m.scrollHeight;
+}
+function copilot(){
+  return `<div class="ph"><div><h1>Protocol copilot</h1><p>What direct care staff see on their phones. It answers from the resident's approved plan and cites where each answer came from.</p></div></div>
+  <div class="cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start">
+   <div class="phone"><div class="screen"><div class="ph-h"><span class="av">${ic('chat','s')}</span><div><b>Protocol Copilot</b><small>Alder House · Evening shift</small></div></div>
+    <div class="msgs">${chat.map(m=>`<div class="msg ${m.w}">${esc(m.t)}${m.s?`<div class="src">${m.s.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}</div>`).join('')}</div>
+    <div class="ph-f"><div class="chips">${SUGG.map(s=>`<button class="chip" data-act="ask" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+     <form id="askf"><input id="askq" placeholder="Ask about a resident's plan" autocomplete="off" aria-label="Question"><button class="btn pri sm" type="submit" aria-label="Send">${ic('send','s')}</button></form></div></div></div>
+   <div class="stack"><div class="card"><div class="card-h"><h2>Guardrails</h2></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+    ${[['Grounded only','Answers come from approved plans and state guidelines. Nothing else.'],['Always cited','Every answer names the plan section it came from.'],['Declines the rest','Unknown questions are refused and logged for the compliance team.'],['Plan changes need approval','Only reviewed, approved versions are searchable.']].map(([a,b])=>`<div style="display:flex;gap:10px">${ic('check','s')}<div><b>${a}</b><div class="dim2" style="font-size:12.5px">${b}</div></div></div>`).join('')}</div></div>
+    <div class="dim2" style="font-size:12.5px">Sample plan content for demonstration only.</div></div></div>`;
+}
+function control(){
+  const own=Math.round(avg(Object.keys(H).map(h=>scoreH(h).total)));
+  const rows=CLIENTS.map(c=>({n:c[0],h:c[1],s:c[2]==null?own:c[2],r:c[3]===0&&c[0]==='Cedar Grove Care'?RES.reduce((n,x)=>n+openDisc(x),0)+track.filter(t=>t.st==='missing'||t.st==='rejected').length:c[3],l:c[4]})).sort((a,b)=>a.s-b.s);
+  const f=state.sev;const shown=rows.filter(r=>f==='All'||sevOf(r.s)===f.toLowerCase());
+  const sevTag=s=>{const v=sevOf(s);return tag(v==='critical'?'bad':v==='high'?'warn':v==='watch'?'info':'good',v[0].toUpperCase()+v.slice(1))};
+  return `<div class="ph"><div><h1>Control center</h1><p>104 client accounts, ${QUEUE.length} drafts waiting for review.</p></div></div>
+  <div class="g3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+   ${[['Accounts','104'],['Monthly revenue','$104,000'],['Critical','9'],['Awaiting approval',String(QUEUE.length)]].map(([a,b])=>`<div class="card"><div class="card-b stat"><div class="eyebrow">${a}</div><div class="big" style="font-size:28px">${b}</div></div></div>`).join('')}</div>
+  <div class="card"><div class="card-h"><div class="chips">${['All','Critical','High','Watch','Clear'].map(x=>`<button class="chip ${f===x?'on':''}" data-act="sev" data-id="${x}">${x}</button>`).join('')}</div><span class="dim2" style="font-size:12.5px">Lowest readiness first · showing ${shown.length} of 104</span></div>
+  <div class="tw"><table><thead><tr><th>Client</th><th class="r">Houses</th><th>Readiness</th><th>Severity</th><th class="r">Open risks</th><th>Last sync</th></tr></thead><tbody>
+  ${shown.map(r=>`<tr><td><b>${r.n}</b></td><td class="r num">${r.h}</td><td style="min-width:160px"><div style="display:flex;align-items:center;gap:10px"><div class="meter ${tier(r.s)[0]}" style="--v:${r.s};flex:1"><span class="f"></span></div><span class="num" style="width:28px;text-align:right">${r.s}</span></div></td><td>${sevTag(r.s)}</td><td class="r num">${r.r}</td><td class="dim2">${r.l}</td></tr>`).join('')||'<tr><td colspan="6" class="dim2">No accounts at this severity in the sample.</td></tr>'}</tbody></table></div></div>`;
+}
+function queue(){
+  return `<div class="ph"><div><h1>Approval queue</h1><p>AI-generated cross-references and risk drafts. Nothing reaches a client until a reviewer approves it.</p></div></div>
+  <div class="card">${QUEUE.length?`<div class="tw"><table><thead><tr><th>Draft</th><th>Client</th><th>Type</th><th class="r">Confidence</th><th>Age</th><th class="r">Review</th></tr></thead><tbody>
+  ${QUEUE.map(q=>`<tr class="row" data-act="open-q" data-id="${q.id}"><td style="max-width:360px"><div class="cell2"><b>Resident ${q.res}</b><small>${esc(q.text)}</small></div></td><td><div class="cell2"><span>${q.client}</span><small>${q.house}</small></div></td><td>${tag(q.type==='Risk draft'?'info':'','  '+q.type,'nd')}</td><td class="r num">${tag(q.conf>=90?'good':q.conf>=82?'warn':'bad',q.conf+'%','nd')}</td><td class="dim2">${q.age}</td>
+   <td class="r"><span class="acts"><button class="btn sm pri" data-act="approve" data-id="${q.id}">${ic('check','s')}Approve</button><button class="btn sm" data-act="reject" data-id="${q.id}">Reject</button></span></td></tr>`).join('')}</tbody></table></div>`:`<div class="card-b dim2" style="padding:32px;text-align:center">The queue is clear. New drafts appear here as the agents finish.</div>`}</div>`;
+}
+/* ---------- medications and MAR ---------- */
+const marTot=rid=>{let d=0,t=0;MAR[rid].forEach(r=>r.days.forEach(c=>{if(c==='g'||c==='r'||c==='h'){d++;t++}else if(c==='x')t++}));return {d,t,pct:t?Math.round(d/t*100):100}};
+const marN=(rid,code,med)=>MAR[rid].filter(r=>!med||r.med===med).reduce((n,r)=>n+r.days.filter(c=>c===code).length,0);
+function marGrid(rid){
+  const nm={g:'Given',r:'Refused',h:'Held',x:'Not documented',n:'Not needed'};
+  const head=`<tr><th>Medication and time</th>${Array.from({length:30},(_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
+  const body=MAR[rid].map(row=>`<tr><td><div class="cell2"><b style="font-weight:600">${esc(row.med)}</b><small>${esc(row.time)}</small></div></td>${row.days.map((c,i)=>{const k=c==='-'?'n':c;return `<td class="mc ${k}" title="Sep ${i+1}, ${esc(row.time)}: ${nm[k]}">${k==='g'||k==='x'?'<i></i>':k==='r'?'R':k==='h'?'H':'·'}</td>`}).join('')}</tr>`).join('');
+  return `<div class="tw"><table class="mar"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+function meds(){
+  const rs=RES.filter(r=>scope(r.h));if(!rs.find(r=>r.id===state.marRes))state.marRes=rs[0].id;
+  const r=resOf(state.marRes);let d=0,t=0,rf=0,hd=0,mx=0;
+  rs.forEach(x=>{const m=marTot(x.id);d+=m.d;t+=m.t;rf+=marN(x.id,'r');hd+=marN(x.id,'h');mx+=marN(x.id,'x')});
+  const pct=t?Math.round(d/t*100):100,tc=tier(pct)[0],mt=marTot(r.id);
+  const orders=[...new Set(MAR[r.id].map(x=>x.med))];
+  return `<div class="ph"><div><h1>Medications</h1><p>September 2026 medication administration records. Blank boxes are doses nobody documented.</p></div></div>
+  <div class="g3">
+   <div class="card"><div class="card-b stat"><div class="eyebrow">Active medications</div><div class="big">${rs.reduce((n,x)=>n+x.meds.length,0)}</div>
+    <div class="row"><span>Residents on medication</span><span class="num">${rs.length}</span></div>
+    <div class="row"><span>PRN orders</span><span class="num">${rs.reduce((n,x)=>n+x.meds.filter(m=>/PRN/.test(m)).length,0)}</span></div></div></div>
+   <div class="card"><div class="card-b stat"><div class="eyebrow">September MAR completion</div><div class="big">${pct}<small>%</small></div>
+    <div class="meter ${tc}" style="--v:${pct};margin-top:10px"><span class="f"></span></div>
+    <div class="row"><span>Undocumented doses</span><span>${mx?tag('bad',mx+' open'):tag('good','None')}</span></div></div></div>
+   <div class="card"><div class="card-b stat"><div class="eyebrow">Refusals and holds</div><div class="big">${rf+hd}</div>
+    <div class="row"><span>Refused</span><span class="num">${rf}</span></div>
+    <div class="row"><span>Held by order</span><span class="num">${hd}</span></div></div></div>
+  </div>
+  <div class="cols" style="grid-template-columns:minmax(0,260px) minmax(0,1fr)">
+   <div class="card"><div class="card-h"><h3>Residents</h3></div><div class="rlist">${rs.map(x=>{const m=marTot(x.id);return `<button data-act="marres" data-id="${x.id}" class="${x.id===r.id?'on':''}"><span><b>Resident ${x.id}</b><br><small class="dim">${H[x.h]}</small></span>${tag(m.pct===100?'good':m.pct>=90?'warn':'bad',m.pct+'%','nd')}</button>`}).join('')}</div></div>
+   <div class="stack"><div class="card"><div class="card-h"><div><h2>Resident ${r.id}</h2><div class="dim2" style="font-size:12.5px">${H[r.h]} · September 2026</div></div>${mt.pct===100?tag('good','Complete'):tag(mt.pct>=90?'warn':'bad',(mt.t-mt.d)+' undocumented')}</div>
+    ${marGrid(r.id)}
+    <div class="card-b" style="border-top:1px solid var(--line)"><div class="key"><span><i></i>Given</span><span>R Refused</span><span>H Held</span><span><i class="x"></i>Not documented</span><span>· Not needed</span></div></div></div>
+    <div class="card"><div class="card-h"><h3>Orders</h3></div><div class="tw"><table><thead><tr><th>Medication</th><th>Schedule</th><th class="r">Given</th><th class="r">Refused</th><th class="r">Held</th><th class="r">Missing</th></tr></thead><tbody>
+    ${orders.map(m=>{const full=r.meds.find(q=>q.startsWith(m+' · '))||m;return `<tr><td><b>${esc(m)}</b></td><td class="dim2">${esc(full.split(' · ')[1]||'')}</td><td class="r num">${marN(r.id,'g',m)}</td><td class="r num">${marN(r.id,'r',m)}</td><td class="r num">${marN(r.id,'h',m)}</td><td class="r num">${marN(r.id,'x',m)?tag('bad',String(marN(r.id,'x',m)),'nd'):'0'}</td></tr>`}).join('')}</tbody></table></div></div></div></div>`;
+}
+/* ---------- resident profile ---------- */
+function timeline(r){
+  const ev=[...r.ev];
+  care[r.id].forEach((c,i)=>c.vers.forEach(v=>ev.push({d:v.date,t:`${DOCS[i]} v${v.v}: ${v.note.toLowerCase()}`,by:v.by,k:''})));
+  track.filter(t=>t.res===r.id&&t.vers.length).forEach(t=>ev.push({d:t.vers[0].date,t:`September ${t.type} passed the gatekeeper`,by:'Gatekeeper',k:''}));
+  return ev.sort((a,b)=>b.d-a.d).slice(0,9);
+}
+function resident(){
+  const r=resOf(state.resId),cm=CMS[r.cm],hm=STAFF.find(s=>s.h===r.h&&s.role==='House Manager'),inc=INC.filter(x=>x.res===r.id);
+  const open=r.d.filter(x=>!x.done),mt=marTot(r.id);
+  const files=care[r.id].map((c,i)=>`<tr data-drop="care:${r.id}:${i}"><td><b>${DOCS[i]}</b></td><td class="mono">${c.ver?'v'+c.ver:'None'}</td><td>${docTag(c.st)}</td><td class="num dim2">${c.ver?fmtS(c.upd):'Not on file'}</td><td class="r">${fileActs(r.id,i)}</td></tr>`).join('');
+  const orders=[...new Set(MAR[r.id].map(x=>x.med))];
+  return `<div class="ph"><div style="display:flex;align-items:center;gap:14px"><span class="av2" style="width:48px;height:48px;font-size:17px">${r.id}</span><div><button class="btn ghost sm" data-act="nav" data-id="residents" style="margin-left:-10px">${ic('back','s')}Residents</button><h1>Resident ${r.id}</h1><p>${H[r.h]} · ${r.room} · here since ${r.since}</p></div></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">${r.flags.map(f=>tag('','  '+f,'nd')).join('')}<button class="btn" data-act="goharm" data-id="${r.id}">${ic('merge','s')}Risk harmonizer</button></div></div>
+  <div class="prof"><div class="stack">
+   <div class="card"><div class="card-h"><h2>Care documents</h2><span class="dim2" style="font-size:12.5px">Drop a PDF on a row to replace it</span></div><div class="tw"><table><thead><tr><th>Document</th><th>Version</th><th>Status</th><th>Updated</th><th class="r">Actions</th></tr></thead><tbody>${files}</tbody></table></div></div>
+   <div class="card"><div class="card-h"><h2>Medications</h2><button class="btn sm" data-act="marres-open" data-id="${r.id}">September MAR ${ic('chev','s')}</button></div>
+    <div class="list" style="border:0;border-radius:0">${orders.map(m=>{const full=r.meds.find(q=>q.startsWith(m+' · '))||m;return `<div><span><b style="font-weight:600">${esc(m)}</b></span><span class="dim2">${esc(full.split(' · ')[1]||'')}</span></div>`}).join('')}<div><span class="dim2">MAR completion</span>${tag(mt.pct===100?'good':mt.pct>=90?'warn':'bad',mt.pct+'%','nd')}</div></div></div>
+   <div class="card"><div class="card-h"><h2>Risk consistency</h2>${open.length?tag('warn',open.length+' open'):tag('good','Aligned')}</div>
+    ${open.length?open.map(d=>`<div class="dis"><div><b>${d.risk}</b><p>${d.text}</p></div>${tag(d.kind==='conf'?'bad':'warn',d.kind==='conf'?'Conflict':'Missing section')}</div>`).join(''):`<div class="card-b dim2">All five documents agree on every risk.</div>`}</div>
+  </div><div class="stack">
+   <div class="card"><div class="card-h"><h2>Contacts</h2></div><div class="list" style="border:0;border-radius:0">
+    <div><div class="cell2"><small>Case manager</small><b style="font-weight:600">${cm.name}</b><small>${cm.org}</small></div><span class="mono dim2">${cm.phone}</span></div>
+    <div><div class="cell2"><small>Guardian</small><b style="font-weight:600">${GUARD[r.gd]}</b></div></div>
+    <div><div class="cell2"><small>House manager</small><b style="font-weight:600">${hm?hm.name:'Not assigned'}</b></div></div></div></div>
+   <div class="card"><div class="card-h"><h2>Support summary</h2></div><div class="card-b dim2" style="font-size:13px">${SUPPORT[r.sp]}<div style="margin-top:8px;font-size:12px" class="dim">Sample text for demonstration.</div></div></div>
+   ${inc.length?`<div class="card"><div class="card-h"><h2>From the case manager</h2></div><div class="list" style="border:0;border-radius:0">${inc.map(x=>`<div style="cursor:pointer" data-act="open-inc" data-id="${x.id}"><div class="cell2"><b style="font-weight:600">${x.doc} v${x.ver}</b><small>${fmtS(addD(x.rec))} · ${CMS[x.cm].name}</small></div>${x.st==='accepted'?tag('good','Accepted'):x.st==='ready'?tag('warn','Needs review'):tag('info','Reading plan…','proc')}</div>`).join('')}</div></div>`:''}
+   <div class="card"><div class="card-h"><h2>Timeline</h2></div><ul class="tl">${timeline(r).map(e=>`<li><time>${fmtS(e.d)}</time><div><span class="${e.k==='b'?'b':''}">${esc(e.t)}</span><small>${esc(e.by)}</small></div></li>`).join('')}</ul></div>
+  </div></div>`;
+}
+/* ---------- incoming from case managers ---------- */
+function incomingTable(){
+  const rows=INC.filter(x=>scope(resOf(x.res).h));
+  const st=x=>x.st==='accepted'?tag('good','Accepted'):x.st==='ready'?tag('warn','Needs review'):tag('info','Reading plan…','proc');
+  return `<div class="card-h"><div><b>Plans and assessments from case managers</b><div class="dim2" style="font-size:12.5px">Signature checks are skipped. The system reads dates and risks, then waits for review.</div></div><button class="btn sm" data-act="inc-log">${ic('inbox','s')}Simulate incoming document</button></div>
+  <div class="tw"><table><thead><tr><th>Document</th><th>From</th><th>Received</th><th>Status</th><th class="r"></th></tr></thead><tbody>
+  ${rows.map(x=>`<tr class="row" data-act="open-inc" data-id="${x.id}"><td><div class="who2"><span class="av2">${x.res}</span><div class="cell2"><b>${x.doc} v${x.ver}</b><small>Resident ${x.res} · ${H[resOf(x.res).h]}</small></div></div></td><td><div class="cell2"><span>${CMS[x.cm].name}</span><small>${CMS[x.cm].org}</small></div></td><td class="num dim2">${fmtS(addD(x.rec))}</td><td>${st(x)}</td><td class="r">${x.st==='ready'?`<button class="btn sm pri" data-act="open-inc" data-id="${x.id}">Review</button>`:ic('chev','s')}</td></tr>`).join('')||'<tr><td colspan="5" class="dim2">Nothing incoming in this view.</td></tr>'}</tbody></table></div>`;
+}
+function insInc(x0){
+  const x=INC.find(q=>q.id===x0.id);if(!x){state.ins=null;return ''}
+  const cm=CMS[x.cm];
+  return insHead(`<span class="av2" style="width:38px;height:38px">${x.res}</span>`,`${x.doc} v${x.ver}, Resident ${x.res}`,`From ${cm.name}, ${cm.org}`,x.st==='accepted'?tag('good','Accepted'):x.st==='ready'?tag('warn','Needs review'):tag('info','Reading plan…','proc'))+
+  `<div class="insp-b"><div><div class="eyebrow" style="margin-bottom:8px">What the system read</div>${x.x.length?`<div class="list">${x.x.map(t=>`<div>${esc(t)}</div>`).join('')}</div>`:'<div class="dim2">Still reading. This takes a few seconds.</div>'}</div>
+  <div class="dim2" style="font-size:12.5px">Accepting adds a new version to the resident's file and re-checks all five documents for conflicts.</div>
+  ${x.st==='ready'?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="inc-accept" data-id="${x.id}">${ic('check','s')}Accept as v${x.ver}</button><button class="btn" data-act="inc-return" data-id="${x.id}">Send back with questions</button></div>`:''}
+  <div><button class="btn sm" data-act="open-prof" data-id="${x.res}">Open Resident ${x.res} profile ${ic('chev','s')}</button></div></div>`;
+}
+function acceptInc(id){
+  const x=INC.find(q=>q.id===id);if(!x)return;
+  const i=DOCS.indexOf(x.doc),c=care[x.res][i];
+  x.st='accepted';c.ver=(c.ver||0)+1;c.upd=new Date(TODAY);c.by='Case manager';if(c.st==='m'||c.st==='d')c.st='o';
+  c.vers.unshift({v:c.ver,date:new Date(TODAY),by:CMS[x.cm].name,note:'Received from case manager'});
+  act('Compliance Team',`Accepted ${x.doc} v${c.ver} from ${CMS[x.cm].name} for Resident ${x.res}. Harmonizer is re-checking.`,'g','file');
+  if(state.ins&&state.ins.kind==='inc')state.ins=null;
+  render();toast(`Accepted ${x.doc} for ${x.res}. Re-checking all five documents`);
+  setTimeout(()=>{const n=openDisc(resOf(x.res));toast(`Harmonizer re-checked ${x.res}: ${n?n+' open discrepancies':'all documents agree'}`,{icon:'merge'})},1200);
+}
+function simIncoming(){
+  const pick=INCQ.find(([r,d])=>scope(resOf(r).h)&&!INC.some(x=>x.res===r&&x.doc===d));
+  if(!pick){toast('No more sample documents to receive in this view',{icon:'alert'});return}
+  const [r,d]=pick,cmi=resOf(r).cm,vv=(care[r][DOCS.indexOf(d)].ver||0)+1;
+  const x={id:'in'+(++incN),res:r,doc:d,ver:vv,cm:cmi,rec:0,st:'extracting',x:[]};INC.unshift(x);
+  toast(`${d} for ${r} arrived from ${CMS[cmi].name}. Reading the plan`,{icon:'inbox'});render();
+  setTimeout(()=>{x.st='ready';x.x=['Plan period Jan 1, 2027 to Dec 31, 2027','Supervision level unchanged','Two protocol sections updated'];
+    act('Gatekeeper',`Read ${d} v${vv} from ${CMS[cmi].name} for Resident ${r}. Ready for review.`,'','inbox');render();
+    toast(`${d} for ${r} is ready for review`,{icon:'inbox',action:{label:'Review',fn:()=>openIns({kind:'inc',id:x.id})}})},2200);
+}
+/* ---------- guided demo ---------- */
+const tourRow=()=>track.find(t=>t.res==='TG'&&t.type==='MAR');
+const TOUR=[
+ {t:'The owner sees readiness first',x:()=>'Every house gets a 0 to 100 score built from care documents, monthly tracking, risk consistency and staff credentials. The ticks mark 70 and 85. Activity from your compliance team sits underneath.',go:()=>{state.role='client';state.house='all';state.page='dashboard'}},
+ {t:'Cascade Court is at risk',x:()=>`Cascade Court scores ${scoreH('C').total}. Missing monthly files, conflicting risk documents and one expired credential pull it down. Everything on the card is clickable.`,go:()=>{state.role='client';state.house='C';state.page='dashboard'}},
+ {t:'A monthly file is overdue',x:()=>'September\'s MAR for Resident TG is not on file. Staff drop the PDF on its row, or anywhere on the page.',go:()=>{state.role='client';state.house='C';state.page='tracking';state.trkType='MAR'}},
+ {t:'An unsigned PDF is rejected',x:()=>'The Gatekeeper reads the file in the background. It rejects this one and shows exactly which fields are missing, so staff fix it the same day.',go:()=>{state.role='client';state.house='C';state.page='tracking';state.trkType='MAR';const r=tourRow();if(r)gate(r,'MAR_TG_2026-09_unsigned.pdf')}},
+ {t:'The corrected file is accepted',x:()=>`Once it passes, the file is verified and Cascade Court's readiness moves. It is ${scoreH('C').total} now.`,go:()=>{state.role='client';state.house='C';state.page='tracking';state.trkType='MAR';const r=tourRow();if(r)gate(r,'MAR_TG_2026-09.pdf')}},
+ {t:'Risks are checked across five documents',x:()=>`Resident TG has ${resOf('TG').d.filter(d=>!d.done).length} open discrepancies. The matrix shows which document is the source and which ones are missing or in conflict.`,go:()=>{state.role='client';state.house='all';state.harm='TG';state.page='harmonizer'}},
+ {t:'One click syncs the fixes',x:()=>`The discrepancies are cleared. In production this is a reviewed draft that creates new document versions, never an overwrite. Cascade Court risk consistency is ${scoreH('C').risk}.`,go:()=>{state.role='client';state.house='all';state.harm='TG';state.page='harmonizer';const n=syncRes('TG');if(n)toast(`Synced ${n} discrepancies for TG across the care documents`,{icon:'merge'})}},
+ {t:'Your team approves before clients see it',x:()=>'The agency view lists every AI draft across all client accounts. Approve the draft for Resident OL to deploy it. Nothing reaches a client until someone does.',go:()=>{state.role='agency';state.page='queue'}},
+ {t:'Staff get answers from the approved plan',x:()=>'On the floor, staff ask the copilot. It answers from approved plans, cites the section, and refuses anything outside them.',go:()=>{state.role='client';state.house='all';state.page='copilot';chat=CHAT.slice();ask('Evening routine for DN')}},
+ {t:'That is the loop',x:()=>'Upload, check, fix, approve, answer. Close this card to keep exploring. Cmd+K searches every resident, medication, staff member and protocol.',go:()=>{state.role='client';state.page='dashboard';state.house='all'}}
+];
+function tourGo(i){if(i<0)i=0;if(i>=TOUR.length){state.tour=null;render();return}state.tour=i;state.ins=null;state.menu=false;TOUR[i].go();render();sessionEl().scrollTop=0}
+function renderTour(){
+  const el=$('#tour');if(state.tour==null){el.hidden=true;return}
+  const s=TOUR[state.tour];el.hidden=false;
+  el.innerHTML=`<div class="bar">${TOUR.map((_,k)=>`<i class="${k<=state.tour?'on':''}"></i>`).join('')}</div><div class="eyebrow">Guided demo · ${state.tour+1} of ${TOUR.length}</div><h3 style="font-size:15px">${s.t}</h3><p>${s.x()}</p><div class="btns"><button class="btn ghost sm" data-act="tour-close">Close</button><span style="display:flex;gap:8px">${state.tour?`<button class="btn sm" data-act="tour-back">Back</button>`:''}<button class="btn pri sm" data-act="tour-next">${state.tour===TOUR.length-1?'Finish':'Next'}</button></span></div>`;
+}
+const PAGES={dashboard,residents,meds,resident,tracking,staff,harmonizer,audit,copilot,control,queue};
+
+/* ---------- inspector ---------- */
+function openIns(x){state.prevIns=(x.kind==='hist'&&state.ins&&state.ins.kind!=='hist')?state.ins:null;state.ins=x;lastFocus=document.activeElement;render();setTimeout(()=>{const b=$('#insp [data-act="close"]');if(b)b.focus()},30)}
+let lastFocus=null;
+function closeIns(){state.ins=null;state.prevIns=null;render();if(lastFocus&&lastFocus.focus)try{lastFocus.focus()}catch(e){}}
+function insHead(avatar,title,sub,right=''){return `<div class="insp-h">${state.prevIns?`<button class="ib" data-act="ins-back" aria-label="Back">${ic('back')}</button>`:''}${avatar}<div class="grow"><h2>${title}</h2><div class="dim2" style="font-size:12.5px">${sub}</div></div>${right}<button class="ib" data-act="close" aria-label="Close panel">${ic('x')}</button></div>`}
+function insRes(x){
+  const r=resOf(x.id),tab=x.tab||'files';
+  const body=tab==='files'?`<div class="list">${DOCS.map((d,i)=>{const c=care[r.id][i];return `<div data-drop="care:${r.id}:${i}"><div class="cell2"><b>${d}</b><small>${c.ver?`v${c.ver} · ${fmt(c.upd)}`:'Not on file'}</small></div><span style="display:flex;align-items:center;gap:8px">${docTag(c.st)}${fileActs(r.id,i)}</span></div>`}).join('')}</div><div class="dim2" style="font-size:12.5px">Replacing a file runs the gatekeeper and then re-checks all five documents.</div>`
+  :tab==='risks'?(openDisc(r)?`<div class="list">${r.d.filter(d=>!d.done).map(d=>`<div style="align-items:flex-start"><div><b>${d.risk}</b><div class="dim2" style="font-size:12.5px">${d.text}</div></div>${tag(d.kind==='conf'?'bad':'warn',d.kind==='conf'?'Conflict':'Missing')}</div>`).join('')}</div><button class="btn pri" data-act="goharm" data-id="${r.id}">${ic('merge','s')}Review in harmonizer</button>`:`<div class="list"><div>All five documents agree on every risk. ${tag('good','Aligned')}</div></div>`)
+  :`<div class="list">${r.meds.map(m=>`<div><span>${m.split(' · ')[0]}</span><span class="dim2">${m.split(' · ')[1]||''}</span></div>`).join('')}</div>`;
+  return insHead(`<span class="av2" style="width:38px;height:38px;font-size:14px">${r.id}</span>`,`Resident ${r.id}`,`${H[r.h]} · ${r.room} · since ${r.since}`)+
+  `<div class="insp-b"><div style="display:flex;gap:6px;flex-wrap:wrap">${r.flags.length?r.flags.map(f=>tag('','  '+f,'nd')).join(''):'<span class="dim2">No risk flags</span>'}</div>
+  <div><button class="btn sm" data-act="open-prof" data-id="${r.id}">Open full profile ${ic('chev','s')}</button></div>
+  <div class="tabs">${[['files','Files'],['risks','Risks'+(openDisc(r)?` (${openDisc(r)})`:'')],['meds','Medications']].map(([k,l])=>`<button data-act="tab" data-id="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>${body}</div>`;
+}
+function insStaff(x){
+  const s=STAFF.find(q=>q.id===x.id),blocked=s.cr.some(c=>c.d<0);
+  return insHead(`<span class="av2" style="width:38px;height:38px">${s.name.split(' ').map(a=>a[0]).join('')}</span>`,s.name,`${s.role} · ${H[s.h]}`)+
+  `<div class="insp-b"><div>${blocked?tag('bad','Scheduling blocked until renewed'):tag('good','Cleared to schedule')}</div>
+  <div class="list">${s.cr.map(c=>`<div><div class="cell2"><b>${c.k}</b><small class="mono">${fmt(addD(c.d))}</small></div>${credCell(c).replace(/<span class="mono">.*?<\/span>/,'')}</div>`).join('')}<div><div class="cell2"><b>Training hours</b></div><span class="num">${s.hrs[0]} of ${s.hrs[1]} h</span></div></div>
+  <div><div class="eyebrow" style="margin-bottom:8px">Reminders</div>${remind(s)}</div>
+  <button class="btn pri" data-act="remind" data-id="${s.id}">${ic('bell','s')}Send reminder now</button></div>`;
+}
+function insDoc(x){
+  const t=track.find(q=>q.id===x.id),ok=t.st==='verified',bad=t.st==='rejected';
+  const checks=t.st==='missing'?'':[['Document type',!bad||!t.fields.some(f=>/Reads as|PDF/.test(f))],['Signature block',!(bad&&t.fields.some(f=>/signature/i.test(f)))],['Dates present',!(bad&&t.fields.some(f=>/date/i.test(f)))],['Legible scan',true]];
+  return insHead(`<span class="av2" style="width:38px;height:38px">${t.res}</span>`,`${t.type}, Resident ${t.res}`,`${H[resOf(t.res).h]} · September 2026`,trkStatus(t))+
+  `<div class="insp-b">${t.st==='missing'?`<div class="list"><div>No file uploaded. Due Oct 5.</div></div><button class="btn pri" data-act="trk-upload" data-id="${t.id}">${ic('upload','s')}Upload PDF</button>`:`
+  <div><div class="eyebrow" style="margin-bottom:8px">Gatekeeper result</div>${checks.map(([l,p])=>`<div class="chk">${ic(p?'check':'x','s').replace('class="i s"',`class="i s" style="color:var(--${p?'good':'bad'})"`)}<span>${l}</span><span style="margin-left:auto">${p?tag('good','Pass','nd'):tag('bad','Fail','nd')}</span></div>`).join('')}</div>
+  <div class="paper"><b>${esc(t.file||'')}</b><span class="ln" style="width:90%"></span><span class="ln" style="width:70%"></span><span class="ln" style="width:82%"></span><div class="blk ${bad&&t.fields.some(f=>/signature/i.test(f))?'bad':''}">${bad&&t.fields.some(f=>/signature/i.test(f))?'Staff signature missing':'Staff signature found'}</div><div class="blk ${bad&&t.fields.some(f=>/date/i.test(f))?'bad':''}">${bad&&t.fields.some(f=>/date/i.test(f))?'Review date missing':'Review date found'}</div></div>
+  <div><div class="eyebrow" style="margin-bottom:8px">Versions</div><div class="list">${t.vers.length?t.vers.map(v=>`<div><div class="cell2"><b>v${v.v}</b><small>${v.note}</small></div><span class="dim2">${fmt(v.date)} · ${v.by}</span></div>`).join(''):'<div class="dim2">No accepted versions yet</div>'}</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="trk-upload" data-id="${t.id}">${ic('replace','s')}Replace file</button><button class="btn" data-act="trk-arch" data-id="${t.id}">${ic('archive','s')}Archive</button></div>`}</div>`;
+}
+function insHist(x){
+  let title,sub,vers,note='';
+  if(x.src==='care'){const c=care[x.id][x.i];title=`${DOCS[x.i]} history`;sub=`Resident ${x.id}`;vers=c.vers}
+  else{const t=track.find(q=>q.id===x.id);title=`${t.type} history`;sub=`Resident ${t.res}`;vers=t.vers}
+  return insHead(ic('history'),title,sub)+`<div class="insp-b"><div class="list">${vers.length?vers.map((v,k)=>`<div><div class="cell2"><b>v${v.v} ${k===0?tag('good','Current','nd'):''}</b><small>${v.note} · ${v.by}</small></div><span style="display:flex;gap:10px;align-items:center"><span class="dim2">${fmt(v.date)}</span>${k?`<button class="btn sm" data-act="restore" data-v="${v.v}">Restore</button>`:''}</span></div>`).join(''):'<div class="dim2">No versions yet</div>'}</div></div>`;
+}
+function insQ(x){
+  const q=QUEUE.find(a=>a.id===x.id);if(!q){state.ins=null;return ''}
+  return insHead(`<span class="av2" style="width:38px;height:38px">${q.res}</span>`,`${q.type}, Resident ${q.res}`,`${q.client} · ${q.house}`,tag(q.conf>=90?'good':q.conf>=82?'warn':'bad',q.conf+'% confidence','nd'))+
+  `<div class="insp-b"><p>${esc(q.text)}</p><div class="list">${q.detail.map(d=>`<div>${esc(d)}</div>`).join('')}</div>
+  <div style="display:flex;gap:8px"><button class="btn pri" data-act="approve" data-id="${q.id}">${ic('check','s')}Approve and deploy</button><button class="btn" data-act="reject" data-id="${q.id}">Reject</button></div></div>`;
+}
+function insNotif(){
+  const n=attention();
+  return insHead(ic('bell'),'Notifications','Live from the background agents')+`<div class="insp-b">${n.length?`<div class="list">${n.map((a,i)=>`<div style="cursor:pointer" data-act="att" data-i="${i}"><div class="cell2"><b>${esc(a.t)}</b><small>${esc(a.m)}</small></div>${ic('chev','s')}</div>`).join('')}</div>`:'<div class="dim2">You are all caught up.</div>'}</div>`;
+}
+function renderInspector(){
+  const el=$('#insp'),x=state.ins;
+  if(!x){el.classList.remove('open');el.setAttribute('aria-hidden','true');$('#scrim').classList.remove('on');return}
+  const sc=$('.insp-b',el)?$('.insp-b',el).scrollTop:0;
+  el.innerHTML={res:insRes,staff:insStaff,doc:insDoc,hist:insHist,q:insQ,notif:insNotif,inc:insInc}[x.kind](x);
+  el.classList.add('open');el.setAttribute('aria-hidden','false');$('#scrim').classList.add('on');
+  const b=$('.insp-b',el);if(b)b.scrollTop=sc;
+}
+
+/* ---------- palette ---------- */
+const insFor=t=>t.kind==='res'?{kind:'res',id:t.id,tab:t.tab}:t.kind==='staff'?{kind:'staff',id:t.id}:t.kind==='inc'?{kind:'inc',id:t.id}:{kind:'doc',id:t.id};
+const pal={q:'',i:0,items:[]};
+function palItems(){
+  const q=pal.q.trim().toLowerCase(),all=[];
+  Object.entries(TITLES).filter(([p])=>(state.role==='client'?CLIENT_NAV:AGENCY_NAV).some(n=>n[0]===p)).forEach(([p,l])=>all.push({g:'Pages',l,s:'',go:{t:'page',p}}));
+  RES.forEach(r=>all.push({g:'Residents',l:`Resident ${r.id}`,s:`${H[r.h]} · ${r.room}`,go:{t:'res',id:r.id,tab:'files'}}));
+  STAFF.forEach(s=>all.push({g:'Staff',l:s.name,s:`${s.role} · ${H[s.h]}`,go:{t:'staff',id:s.id}}));
+  RES.forEach(r=>r.meds.forEach(m=>all.push({g:'Medications',l:m.split(' · ')[0],s:`Resident ${r.id} · ${m.split(' · ')[1]||''}`,go:{t:'res',id:r.id,tab:'meds'}})));
+  RES.forEach(r=>r.flags.forEach(f=>all.push({g:'Protocols',l:`${f} protocol`,s:`Resident ${r.id}`,go:{t:'res',id:r.id,tab:'risks'}})));
+  return (q?all.filter(a=>(a.l+' '+a.s).toLowerCase().includes(q)):all.filter(a=>a.g==='Pages'||a.g==='Residents').slice(0,10)).slice(0,12);
+}
+function palRender(){
+  pal.items=palItems();if(pal.i>=pal.items.length)pal.i=0;
+  let g='',h='';
+  pal.items.forEach((a,k)=>{if(a.g!==g){g=a.g;h+=`<div class="pal-g">${g}</div>`}h+=`<button class="pal-i ${k===pal.i?'on':''}" role="option" data-act="pal-go" data-k="${k}"><span>${esc(a.l)}</span><small>${esc(a.s)}</small></button>`});
+  $('#pall').innerHTML=h||'<div class="pal-empty">No matches</div>';
+  const on=$('#pall .on');if(on)on.scrollIntoView({block:'nearest'});
+}
+function palOpen(){pal.q='';pal.i=0;$('#pal').hidden=false;$('#palq').value='';palRender();$('#palq').focus()}
+function palClose(){$('#pal').hidden=true}
+function palGo(a){
+  palClose();const g=a.go;
+  if(g.t==='page'){nav(g.p)}else if(g.t==='res'){openIns({kind:'res',id:g.id,tab:g.tab})}else{openIns({kind:'staff',id:g.id})}
+}
+
+/* ---------- core ---------- */
+function nav(p){state.page=p;state.ins=null;state.menu=false;render();sessionEl().scrollTop=0}
+function render(){
+  const sc=sessionEl().scrollTop,mg=$('.msgs')?$('.msgs').scrollTop:0;
+  $('#side').innerHTML=sideHTML();$('#side').classList.toggle('open',state.menu);
+  $('#top').innerHTML=topHTML();$('#view').innerHTML=PAGES[state.page]();
+  renderInspector();renderTour();sessionEl().scrollTop=sc;const m=$('.msgs');if(m)m.scrollTop=m.scrollHeight||mg;
+}
+function pick(tg){target=tg;const f=$('#filein');f.value='';f.click()}
+$('#filein').addEventListener('change',e=>{const f=e.target.files[0];if(f&&target)handleFile(f,target)});
+const parseDrop=s=>{if(!s)return null;const p=s.split(':');return p[0]==='track'?{kind:'track',id:p[1]}:p[0]==='care'?{kind:'care',id:p[1],i:+p[2]}:null};
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act,id=el.dataset.id,i=el.dataset.i;
+  switch(a){
+    case'nav':nav(id);break;
+    case'role':state.role=id;state.page=id==='client'?'dashboard':'control';state.ins=null;state.menu=false;render();break;
+    case'house':state.house=id;render();break;
+    case'house-open':state.house=id;nav('residents');break;
+    case'theme':{const d=document.documentElement,dark=d.dataset.theme==='dark'||(!d.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('wardwell-theme',d.dataset.theme)}catch(x){}render();break}
+    case'menu':state.menu=!state.menu;render();break;
+    case'scrim':if(state.menu){state.menu=false;render()}else closeIns();break;
+    case'bell':openIns({kind:'notif'});break;
+    case'close':closeIns();break;
+    case'ins-back':state.ins=state.prevIns;state.prevIns=null;render();break;
+    case'tab':state.ins={...state.ins,tab:id};render();break;
+    case'open-res':openIns({kind:'res',id});break;
+    case'open-staff':openIns({kind:'staff',id});break;
+    case'open-doc':openIns({kind:'doc',id});break;
+    case'open-q':openIns({kind:'q',id});break;
+    case'att':{const x=(state.ins&&state.ins.kind==='notif'?attention():state.page==='dashboard'?attention():attention())[+i];if(x){const t=x.a;state.ins=null;openIns(insFor(t))}break}
+    case'finding':{const x=findings()[+i];if(x){const t=x.a;openIns(insFor(t))}break}
+    case'resview':state.resView=id;render();break;
+    case'trktype':state.trkType=id;render();break;
+    case'sev':state.sev=id;render();break;
+    case'trk-upload':pick({kind:'track',id});break;
+    case'care-upload':pick({kind:'care',id,i:+i});break;
+    case'trk-hist':openIns({kind:'hist',src:'track',id});break;
+    case'care-hist':openIns({kind:'hist',src:'care',id,i:+i});break;
+    case'trk-arch':{const t=track.find(q=>q.id===id);const was=t.st;t.st='archived';if(state.ins&&state.ins.kind!=='res')state.ins=null;act('Facility staff',`Archived ${t.type} for Resident ${t.res}.`,'','archive');render();toast(`Archived ${t.type} for ${t.res}`,{icon:'archive',action:{label:'Undo',fn:()=>{t.st=was;ACT.shift();render()}}});break}
+    case'care-arch':{const c=care[id][+i];const was=c.st;c.st='arch';render();toast(`Archived ${DOCS[+i]} for ${id}`,{icon:'archive',action:{label:'Undo',fn:()=>{c.st=was;render()}}});break}
+    case'care-restore':{const c=care[id][+i];c.st=c.prev==='arch'?'o':c.prev;render();break}
+    case'restore':toast(`Restored v${el.dataset.v} as the current version`,{icon:'history'});break;
+    case'demo':{const rows=trackRows().filter(t=>t.st==='missing'||t.st==='rejected');const row=rows[0]||trackRows()[0];if(!row)break;const slug=row.type.replace(' ','');handleFile({name:id==='good'?`${slug}_${row.res}_2026-09.pdf`:`${slug}_${row.res}_2026-09_unsigned.pdf`},{kind:'track',id:row.id});break}
+    case'harm':state.harm=id;render();break;
+    case'goharm':state.harm=id;state.house='all';nav('harmonizer');break;
+    case'sync':{const n=syncRes(id);if(n){toast(`Synced ${n} discrepancies for ${id} across the care documents`,{icon:'merge'})}render();break}
+    case'remind':{const s=STAFF.find(q=>q.id===id);act('Credential Tracker',`Sent a reminder to ${s.name} by SMS and email.`,'w','bell');toast(`Reminder sent to ${s.name} by SMS and email`,{icon:'bell'});render();break}
+    case'approve':{const q=QUEUE.find(a=>a.id===id);if(!q)break;QUEUE=QUEUE.filter(a=>a.id!==id);let msg=`Approved draft for ${q.res} at ${q.client}`;if(q.sync){const n=syncRes(q.sync);msg=n?`Approved and deployed. ${n} discrepancies synced for ${q.res}`:`Approved and deployed for ${q.res}`}else act('Compliance Team',`Approved a ${q.type.toLowerCase()} for ${q.client}.`,'g','check');if(state.ins&&state.ins.kind==='q')state.ins=null;render();toast(msg);break}
+    case'reject':{const q=QUEUE.find(a=>a.id===id);if(!q)break;QUEUE=QUEUE.filter(a=>a.id!==id);if(state.ins&&state.ins.kind==='q')state.ins=null;render();toast(`Rejected draft for ${q.res}. Sent back to the agent`,{icon:'x'});break}
+    case'open-prof':state.resId=id;state.page='resident';state.ins=null;state.menu=false;render();sessionEl().scrollTop=0;break;
+    case'marres':state.marRes=id;render();break;
+    case'marres-open':state.marRes=id;state.house='all';nav('meds');break;
+    case'open-inc':openIns({kind:'inc',id});break;
+    case'inc-accept':acceptInc(id);break;
+    case'inc-return':{const x=INC.find(q=>q.id===id);INC=INC.filter(q=>q.id!==id);state.ins=null;act('Compliance Team',`Sent ${x.doc} v${x.ver} for Resident ${x.res} back to ${CMS[x.cm].name} with questions.`,'w','send');render();toast(`Sent back to ${CMS[x.cm].name}`,{icon:'send'});break}
+    case'inc-log':simIncoming();break;
+    case'tour-start':tourGo(0);break;
+    case'tour-next':tourGo(state.tour+1);break;
+    case'tour-back':tourGo(state.tour-1);break;
+    case'tour-close':state.tour=null;render();break;
+    case'ask':ask(el.dataset.q);break;
+    case'pal':palOpen();break;
+    case'pal-go':palGo(pal.items[+el.dataset.k]);break;
+    case'toast-act':{const f=TFN[id];if(f)f();el.closest('.toast').remove();break}
+  }
+});
+document.addEventListener('submit',e=>{if(e.target.id==='askf'){e.preventDefault();const v=$('#askq').value.trim();if(v){$('#askq').value='';ask(v)}}});
+$('#palq').addEventListener('input',e=>{pal.q=e.target.value;pal.i=0;palRender()});
+$('#pal').addEventListener('mousedown',e=>{if(e.target.id==='pal')palClose()});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#pal').hidden?palOpen():palClose();return}
+  if(!$('#pal').hidden){
+    if(e.key==='Escape'){palClose()}
+    else if(e.key==='ArrowDown'){e.preventDefault();pal.i=Math.min(pal.i+1,pal.items.length-1);palRender()}
+    else if(e.key==='ArrowUp'){e.preventDefault();pal.i=Math.max(pal.i-1,0);palRender()}
+    else if(e.key==='Enter'){e.preventDefault();if(pal.items[pal.i])palGo(pal.items[pal.i])}
+    return;
+  }
+  if(e.key==='Escape'){if(state.menu){state.menu=false;render()}else if(state.ins)closeIns()}
+});
+/* drag and drop */
+let overEl=null;
+document.addEventListener('dragover',e=>{
+  e.preventDefault();const z=e.target.closest&&e.target.closest('[data-drop]');
+  if(overEl&&overEl!==z)overEl.classList.remove('over','drag');
+  if(z){overEl=z;z.classList.add(z.tagName==='TR'?'drag':'over')}
+});
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget&&overEl){overEl.classList.remove('over','drag');overEl=null}});
+document.addEventListener('drop',e=>{
+  e.preventDefault();const z=e.target.closest&&e.target.closest('[data-drop]');
+  if(overEl){overEl.classList.remove('over','drag');overEl=null}
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(!f)return;
+  const tg=z?parseDrop(z.dataset.drop):null;
+  if(!z&&state.page!=='tracking'){toast('Drop files on the Monthly tracking page or on a row',{icon:'alert'});return}
+  handleFile(f,tg);
+});
+
+try{const t=localStorage.getItem('wardwell-theme');if(t)document.documentElement.dataset.theme=t}catch(x){}
+render();
+</script>

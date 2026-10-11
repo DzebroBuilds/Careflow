@@ -1,5 +1,11 @@
-// Prisma schema intentionally empty until docs/SCHEMA.md is approved.
-// Run `prisma migrate` only after sign-off.
+// Careflow demo-phase schema. Source of truth for the design is docs/SCHEMA.md.
+//
+// Tenant model: every tenant table carries organization_id. Row-level security is applied by
+// prisma/rls.sql (run it after every migrate). The app connects as the non-superuser role
+// created there, so RLS cannot be bypassed from application code.
+//
+// Demo phase: fake data only. Legal names, dates of birth and Medicaid / ODDS client numbers are
+// deliberately NOT modelled yet. Add them back with column-level encryption before any real data.
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +14,908 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum Role {
+  OWNER
+  MANAGER
+  DSP
+  AUDITOR
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum CredentialType {
+  CPR_FIRST_AID
+  MEDICATION_ADMIN
+  CRIMINAL_HISTORY_CHECK
+  DRIVER_LICENSE
+  FOOD_HANDLER
+  OTHER
+}
+
+enum TrainingType {
+  ODDS_CORE
+  ISP_SPECIFIC
+  BEHAVIOR_SUPPORT
+  ABUSE_NEGLECT
+  EMERGENCY_PREPAREDNESS
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  CLOSED
+}
+
+enum DocumentType {
+  LICENSE
+  POLICY
+  INSPECTION
+  FIRE_SAFETY
+  INSURANCE
+  OTHER
+}
+
+enum ReviewStatus {
+  PENDING
+  COMPLETE
+  OVERDUE
+}
+
+enum ChecklistItemStatus {
+  PASS
+  FAIL
+  NA
+  PENDING
+}
+
+enum AuditAction {
+  VIEW
+  CREATE
+  UPDATE
+  DELETE
+  EXPORT
+}
+
+// The six risk categories the harmonizer compares across care documents.
+enum RiskCategory {
+  ELOPEMENT
+  ASPIRATION
+  FALLS
+  SEIZURE
+  MEDICATION_REFUSAL
+  SELF_INJURY
+}
+
+// The five care documents every resident file should hold.
+enum CareDocType {
+  RIT
+  ISP
+  PRMS
+  SAFETY_PLAN
+  PBSP
+}
+
+enum CareDocStatus {
+  CURRENT
+  REVIEW_DUE
+  MISSING
+  CONFLICT
+  PROCESSING
+  ARCHIVED
+}
+
+enum DocSource {
+  FACILITY_UPLOAD
+  CASE_MANAGER
+  SYSTEM
+}
+
+// Upload gatekeeper outcome for one file version.
+enum GateStatus {
+  PROCESSING
+  PASSED
+  REJECTED
+}
+
+enum MonthlyFileType {
+  MAR
+  ONA
+  SAFETY_PLAN
+}
+
+enum MonthlyFileStatus {
+  MISSING
+  PROCESSING
+  VERIFIED
+  REJECTED
+  ARCHIVED
+}
+
+enum ContactKind {
+  CASE_MANAGER
+  GUARDIAN
+}
+
+enum IncomingStatus {
+  EXTRACTING
+  READY
+  ACCEPTED
+  RETURNED
+}
+
+enum DiscrepancyKind {
+  MISSING_SECTION
+  CONFLICT
+}
+
+enum DiscrepancyStatus {
+  OPEN
+  DRAFTED
+  RESOLVED
+}
+
+enum ApprovalKind {
+  RISK_DRAFT
+  CROSS_REFERENCE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DoseOutcome {
+  GIVEN
+  REFUSED
+  HELD
+}
+
+enum ReminderChannel {
+  SMS
+  EMAIL
+}
+
+enum ActivityKind {
+  INFO
+  GOOD
+  WARN
+  BAD
+}
+
+// ───────────────────────── Identity and tenancy ─────────────────────────
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.Citext
+  name            String?
+  passwordHash    String?   @map("password_hash")
+  mfaEnabled      Boolean   @default(false) @map("mfa_enabled")
+  mfaSecretEnc    String?   @map("mfa_secret_enc")
+  // Agency (back-office) staff are not members of client organizations. This flag grants the
+  // explicit cross-tenant read/write policy in rls.sql. Keep the number of these users tiny.
+  isAgency        Boolean   @default(false) @map("is_agency")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  lastLoginAt     DateTime? @map("last_login_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  auditEvents AuditEvent[] @relation("Actor")
+
+  @@map("users")
+}
+
+model Organization {
+  id                 String             @id @default(uuid()) @db.Uuid
+  name               String
+  slug               String             @unique
+  timezone           String             @default("America/Los_Angeles")
+  // Billing is stubbed for the demo. Subscription is per client account, not per home.
+  subscriptionStatus SubscriptionStatus @default(TRIALING) @map("subscription_status")
+  stripeCustomerId   String?            @map("stripe_customer_id")
+  deletedAt          DateTime?          @map("deleted_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  memberships           Membership[]
+  homes                 Home[]
+  residents             Resident[]
+  residentRiskFlags     ResidentRiskFlag[]
+  residentContacts      ResidentContact[]
+  staffProfiles         StaffProfile[]
+  staffCredentials      StaffCredential[]
+  staffTrainings        StaffTraining[]
+  remindersSent         ReminderSent[]
+  medications           Medication[]
+  medicationReviews     MedicationOrderReview[]
+  medicationDoses       MedicationDose[]
+  incidents             Incident[]
+  complianceDocuments   ComplianceDocument[]
+  riskChangeForms       RiskChangeForm[]
+  monthlyPeriods        MonthlyTrackingPeriod[]
+  monthlyFiles          MonthlyFile[]
+  checklistTemplates    HouseChecklistTemplate[]
+  checklistTemplateItems HouseChecklistTemplateItem[]
+  checklistRuns         HouseChecklistRun[]
+  checklistItems        HouseChecklistItem[]
+  residentDocuments     ResidentDocument[]
+  documentVersions      DocumentVersion[]
+  incomingDocuments     IncomingDocument[]
+  riskDiscrepancies     RiskDiscrepancy[]
+  approvals             Approval[]
+  activityEvents        ActivityEvent[]
+  homeSummaries         HomeSummary[]
+  auditEvents           AuditEvent[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  role           Role
+  // null = all homes in the organization (typical for OWNER / AUDITOR)
+  homeId         String?   @map("home_id") @db.Uuid
+  invitedAt      DateTime? @map("invited_at")
+  acceptedAt     DateTime? @map("accepted_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  home         Home?        @relation(fields: [homeId], references: [id])
+
+  @@unique([organizationId, userId, homeId])
+  @@index([organizationId])
+  @@map("memberships")
+}
+
+// ───────────────────────── Homes ─────────────────────────
+
+model Home {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  name           String
+  licenseNumber  String?   @map("license_number")
+  addressLine1   String?   @map("address_line1")
+  addressLine2   String?   @map("address_line2")
+  city           String?
+  state          String    @default("OR")
+  postalCode     String?   @map("postal_code")
+  capacity       Int?
+  isActive       Boolean   @default(true) @map("is_active")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization  Organization            @relation(fields: [organizationId], references: [id])
+  memberships   Membership[]
+  residents     Resident[]
+  staffProfiles StaffProfile[]
+  summary       HomeSummary?
+  periods       MonthlyTrackingPeriod[]
+
+  @@index([organizationId])
+  @@map("homes")
+}
+
+// Pre-computed readiness scores. Dashboards read this one row instead of recalculating.
+model HomeSummary {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  homeId         String   @unique @map("home_id") @db.Uuid
+  docsScore      Int      @map("docs_score")
+  trackingScore  Int      @map("tracking_score")
+  riskScore      Int      @map("risk_score")
+  staffScore     Int      @map("staff_score")
+  totalScore     Int      @map("total_score")
+  openItems      Int      @default(0) @map("open_items")
+  computedAt     DateTime @default(now()) @map("computed_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  home         Home         @relation(fields: [homeId], references: [id])
+
+  @@index([organizationId])
+  @@map("home_summaries")
+}
+
+// ───────────────────────── Residents (PHI, audited) ─────────────────────────
+
+model Resident {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  homeId         String    @map("home_id") @db.Uuid
+  // Initials or a preferred name only. Never a legal name in the demo.
+  preferredName  String    @map("preferred_name")
+  roomLabel      String?   @map("room_label")
+  supportSummary String?   @map("support_summary")
+  moveInDate     DateTime? @map("move_in_date") @db.Date
+  moveOutDate    DateTime? @map("move_out_date") @db.Date
+  isActive       Boolean   @default(true) @map("is_active")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  home              Home               @relation(fields: [homeId], references: [id])
+  riskFlags         ResidentRiskFlag[]
+  contacts          ResidentContact[]
+  medications       Medication[]
+  documents         ResidentDocument[]
+  monthlyFiles      MonthlyFile[]
+  incomingDocuments IncomingDocument[]
+  discrepancies     RiskDiscrepancy[]
+  incidents         Incident[]
+  riskChangeForms   RiskChangeForm[]
+
+  @@index([organizationId, homeId])
+  @@map("residents")
+}
+
+model ResidentRiskFlag {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  residentId     String       @map("resident_id") @db.Uuid
+  category       RiskCategory
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  resident     Resident     @relation(fields: [residentId], references: [id])
+
+  @@unique([residentId, category])
+  @@index([organizationId])
+  @@map("resident_risk_flags")
+}
+
+// Case manager and guardian contacts. Never include these in SMS or email bodies.
+model ResidentContact {
+  id             String      @id @default(uuid()) @db.Uuid
+  organizationId String      @map("organization_id") @db.Uuid
+  residentId     String      @map("resident_id") @db.Uuid
+  kind           ContactKind
+  name           String
+  agencyName     String?     @map("agency_name")
+  relationship   String?
+  phone          String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  resident     Resident           @relation(fields: [residentId], references: [id])
+  incoming     IncomingDocument[]
+
+  @@index([organizationId, residentId])
+  @@map("resident_contacts")
+}
+
+// ───────────────────────── Care documents and versions ─────────────────────────
+
+// One row per resident per document type (RIT, ISP, PRMS, Safety Plan, PBSP).
+model ResidentDocument {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  homeId         String        @map("home_id") @db.Uuid
+  residentId     String        @map("resident_id") @db.Uuid
+  type           CareDocType
+  status         CareDocStatus @default(MISSING)
+  currentVersion Int           @default(0) @map("current_version")
+  reviewDueOn    DateTime?     @map("review_due_on") @db.Date
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  resident     Resident        @relation(fields: [residentId], references: [id])
+  versions     DocumentVersion[]
+
+  @@unique([residentId, type])
+  @@index([organizationId, homeId, status])
+  @@map("resident_documents")
+}
+
+// A file version, either of a resident care document or of a monthly tracking file.
+// Exactly one of residentDocumentId / monthlyFileId is set (enforced in rls.sql).
+model DocumentVersion {
+  id                 String      @id @default(uuid()) @db.Uuid
+  organizationId     String      @map("organization_id") @db.Uuid
+  residentDocumentId String?     @map("resident_document_id") @db.Uuid
+  monthlyFileId      String?     @map("monthly_file_id") @db.Uuid
+  version            Int
+  source             DocSource   @default(FACILITY_UPLOAD)
+  gateStatus         GateStatus  @default(PROCESSING) @map("gate_status")
+  // S3 key or local storage key. Never put a resident name in a key or filename.
+  storageKey         String?     @map("storage_key")
+  originalName       String?     @map("original_name")
+  // Gatekeeper output: per-check results, e.g. {"signature":true,"date":false}
+  gateChecks         Json        @default("{}") @map("gate_checks")
+  failedFields       String[]    @default([]) @map("failed_fields")
+  confidence         Decimal?    @db.Decimal(4, 3)
+  note               String?
+  uploadedById       String?     @map("uploaded_by_id") @db.Uuid
+  uploadedByLabel    String?     @map("uploaded_by_label")
+  createdAt          DateTime    @default(now()) @map("created_at")
+
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  residentDocument ResidentDocument? @relation(fields: [residentDocumentId], references: [id])
+  monthlyFile      MonthlyFile?      @relation(fields: [monthlyFileId], references: [id])
+
+  @@unique([residentDocumentId, version])
+  @@unique([monthlyFileId, version])
+  @@index([organizationId, createdAt])
+  @@map("document_versions")
+}
+
+// Plans and assessments sent by a case manager. Signature checks are skipped; dates and risks
+// are extracted, then a person accepts or returns the document.
+model IncomingDocument {
+  id             String         @id @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  residentId     String         @map("resident_id") @db.Uuid
+  contactId      String?        @map("contact_id") @db.Uuid
+  type           CareDocType
+  version        Int
+  status         IncomingStatus @default(EXTRACTING)
+  storageKey     String?        @map("storage_key")
+  // Array of short strings the extractor found (plan period, supervision level, risks)
+  extracted      Json           @default("[]")
+  receivedAt     DateTime       @default(now()) @map("received_at")
+  decidedAt      DateTime?      @map("decided_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  resident     Resident        @relation(fields: [residentId], references: [id])
+  contact      ResidentContact? @relation(fields: [contactId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("incoming_documents")
+}
+
+// ───────────────────────── Risk harmonizer and approvals ─────────────────────────
+
+model RiskDiscrepancy {
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  homeId         String            @map("home_id") @db.Uuid
+  residentId     String            @map("resident_id") @db.Uuid
+  risk           RiskCategory
+  kind           DiscrepancyKind
+  sourceDoc      CareDocType       @map("source_doc")
+  targetDoc      CareDocType       @map("target_doc")
+  summary        String
+  proposedFix    String            @map("proposed_fix")
+  status         DiscrepancyStatus @default(OPEN)
+  approvalId     String?           @map("approval_id") @db.Uuid
+  resolvedAt     DateTime?         @map("resolved_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  resident     Resident     @relation(fields: [residentId], references: [id])
+  approval     Approval?    @relation(fields: [approvalId], references: [id])
+
+  @@index([organizationId, residentId, status])
+  @@map("risk_discrepancies")
+}
+
+// The agency approval queue. Nothing AI-drafted reaches a client until approved here.
+model Approval {
+  id             String         @id @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  residentId     String?        @map("resident_id") @db.Uuid
+  kind           ApprovalKind
+  summary        String
+  confidence     Int?
+  status         ApprovalStatus @default(PENDING)
+  detail         Json           @default("[]")
+  decidedById    String?        @map("decided_by_id") @db.Uuid
+  decidedAt      DateTime?      @map("decided_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  organization  Organization      @relation(fields: [organizationId], references: [id])
+  discrepancies RiskDiscrepancy[]
+
+  @@index([organizationId, status])
+  @@map("approvals")
+}
+
+// What the client sees as "work done by your compliance team".
+model ActivityEvent {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  homeId         String?      @map("home_id") @db.Uuid
+  residentId     String?      @map("resident_id") @db.Uuid
+  actor          String
+  text           String
+  kind           ActivityKind @default(INFO)
+  occurredAt     DateTime     @default(now()) @map("occurred_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, occurredAt])
+  @@map("activity_events")
+}
+
+// ───────────────────────── Staff credentials and training ─────────────────────────
+
+model StaffProfile {
+  id                   String    @id @default(uuid()) @db.Uuid
+  organizationId       String    @map("organization_id") @db.Uuid
+  userId               String?   @map("user_id") @db.Uuid
+  homeId               String?   @map("home_id") @db.Uuid
+  displayName          String    @map("display_name")
+  jobTitle             String?   @map("job_title")
+  // Contact details for reminders. Reminder text never includes resident information.
+  phone                String?
+  email                String?
+  requiredTrainingHours Int      @default(24) @map("required_training_hours")
+  hireDate             DateTime? @map("hire_date") @db.Date
+  isActive             Boolean   @default(true) @map("is_active")
+  deletedAt            DateTime? @map("deleted_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  home         Home?             @relation(fields: [homeId], references: [id])
+  credentials  StaffCredential[]
+  trainings    StaffTraining[]
+
+  @@index([organizationId])
+  @@map("staff_profiles")
+}
+
+model StaffCredential {
+  id             String         @id @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  staffProfileId String         @map("staff_profile_id") @db.Uuid
+  type           CredentialType
+  label          String?
+  issuedOn       DateTime?      @map("issued_on") @db.Date
+  expiresOn      DateTime?      @map("expires_on") @db.Date
+  documentId     String?        @map("document_id") @db.Uuid
+  notes          String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  staff        StaffProfile   @relation(fields: [staffProfileId], references: [id])
+  reminders    ReminderSent[]
+
+  @@index([organizationId, expiresOn])
+  @@map("staff_credentials")
+}
+
+model StaffTraining {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  staffProfileId String       @map("staff_profile_id") @db.Uuid
+  type           TrainingType
+  title          String
+  completedOn    DateTime?    @map("completed_on") @db.Date
+  expiresOn      DateTime?    @map("expires_on") @db.Date
+  hours          Decimal?     @db.Decimal(5, 2)
+  documentId     String?      @map("document_id") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  staff        StaffProfile @relation(fields: [staffProfileId], references: [id])
+
+  @@index([organizationId, expiresOn])
+  @@map("staff_trainings")
+}
+
+// One row per credential per reminder tier, so nobody gets the same reminder twice.
+model ReminderSent {
+  id             String          @id @default(uuid()) @db.Uuid
+  organizationId String          @map("organization_id") @db.Uuid
+  credentialId   String          @map("credential_id") @db.Uuid
+  tier           Int
+  channel        ReminderChannel
+  sentAt         DateTime        @default(now()) @map("sent_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  credential   StaffCredential @relation(fields: [credentialId], references: [id])
+
+  @@unique([credentialId, tier, channel])
+  @@index([organizationId])
+  @@map("reminders_sent")
+}
+
+// ───────────────────────── Medications and MAR ─────────────────────────
+
+model Medication {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  homeId         String    @map("home_id") @db.Uuid
+  residentId     String    @map("resident_id") @db.Uuid
+  name           String
+  dosage         String?
+  route          String?
+  frequency      String?
+  // Scheduled administration slots, e.g. ["8:00 AM", "8:00 PM"]. Empty for PRN.
+  slots          String[]  @default([])
+  isPrn          Boolean   @default(false) @map("is_prn")
+  prescribingMd  String?   @map("prescribing_md")
+  isActive       Boolean   @default(true) @map("is_active")
+  startDate      DateTime? @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization            @relation(fields: [organizationId], references: [id])
+  resident     Resident                @relation(fields: [residentId], references: [id])
+  reviews      MedicationOrderReview[]
+  doses        MedicationDose[]
+
+  @@index([organizationId, residentId])
+  @@map("medications")
+}
+
+model MedicationOrderReview {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  medicationId   String       @map("medication_id") @db.Uuid
+  homeId         String       @map("home_id") @db.Uuid
+  residentId     String       @map("resident_id") @db.Uuid
+  dueOn          DateTime     @map("due_on") @db.Date
+  completedOn    DateTime?    @map("completed_on") @db.Date
+  status         ReviewStatus @default(PENDING)
+  reviewedById   String?      @map("reviewed_by_id") @db.Uuid
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+
+  @@index([organizationId, dueOn, status])
+  @@map("medication_order_reviews")
+}
+
+// One row per expected scheduled dose. outcome = null means nobody documented it.
+model MedicationDose {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  medicationId   String       @map("medication_id") @db.Uuid
+  administeredOn DateTime     @map("administered_on") @db.Date
+  slot           String
+  outcome        DoseOutcome?
+  initials       String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+
+  @@unique([medicationId, administeredOn, slot])
+  @@index([organizationId, administeredOn])
+  @@map("medication_doses")
+}
+
+// ───────────────────────── Incidents, house documents, forms ─────────────────────────
+
+model Incident {
+  id             String           @id @default(uuid()) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  homeId         String           @map("home_id") @db.Uuid
+  residentId     String?          @map("resident_id") @db.Uuid
+  title          String
+  description    String
+  occurredAt     DateTime         @map("occurred_at")
+  severity       IncidentSeverity
+  status         IncidentStatus   @default(DRAFT)
+  reportedById   String?          @map("reported_by_id") @db.Uuid
+  closedAt       DateTime?        @map("closed_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  resident     Resident?    @relation(fields: [residentId], references: [id])
+
+  @@index([organizationId, homeId, occurredAt])
+  @@map("incidents")
+}
+
+// House- or organization-level documents: license, inspections, insurance, policies.
+model ComplianceDocument {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  homeId         String?      @map("home_id") @db.Uuid
+  type           DocumentType
+  title          String
+  storageKey     String       @map("storage_key")
+  mimeType       String       @map("mime_type")
+  byteSize       Int          @map("byte_size")
+  effectiveOn    DateTime?    @map("effective_on") @db.Date
+  expiresOn      DateTime?    @map("expires_on") @db.Date
+  uploadedById   String?      @map("uploaded_by_id") @db.Uuid
+  deletedAt      DateTime?    @map("deleted_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, expiresOn])
+  @@map("compliance_documents")
+}
+
+model RiskChangeForm {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  homeId         String    @map("home_id") @db.Uuid
+  residentId     String    @map("resident_id") @db.Uuid
+  summary        String
+  changeDetails  String    @map("change_details")
+  effectiveOn    DateTime  @map("effective_on") @db.Date
+  submittedAt    DateTime? @map("submitted_at")
+  submittedById  String?   @map("submitted_by_id") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  resident     Resident     @relation(fields: [residentId], references: [id])
+
+  @@index([organizationId, homeId])
+  @@map("risk_change_forms")
+}
+
+// ───────────────────────── Monthly tracking ─────────────────────────
+
+model MonthlyTrackingPeriod {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  homeId         String    @map("home_id") @db.Uuid
+  yearMonth      String    @map("year_month") // "2026-09"
+  dueOn          DateTime  @map("due_on") @db.Date
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  home         Home         @relation(fields: [homeId], references: [id])
+  files        MonthlyFile[]
+
+  @@unique([homeId, yearMonth])
+  @@index([organizationId])
+  @@map("monthly_tracking_periods")
+}
+
+// One MAR, ONA or Safety Plan per resident per month, backed by an uploaded file version.
+model MonthlyFile {
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  periodId       String            @map("period_id") @db.Uuid
+  homeId         String            @map("home_id") @db.Uuid
+  residentId     String            @map("resident_id") @db.Uuid
+  yearMonth      String            @map("year_month")
+  type           MonthlyFileType
+  status         MonthlyFileStatus @default(MISSING)
+  currentVersion Int               @default(0) @map("current_version")
+  dueOn          DateTime          @map("due_on") @db.Date
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  period       MonthlyTrackingPeriod @relation(fields: [periodId], references: [id])
+  resident     Resident              @relation(fields: [residentId], references: [id])
+  versions     DocumentVersion[]
+
+  @@unique([residentId, yearMonth, type])
+  @@index([organizationId, homeId, status])
+  @@map("monthly_files")
+}
+
+// ───────────────────────── House checklist ─────────────────────────
+
+model HouseChecklistTemplate {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  homeId         String?  @map("home_id") @db.Uuid
+  name           String
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization  Organization                 @relation(fields: [organizationId], references: [id])
+  templateItems HouseChecklistTemplateItem[]
+  runs          HouseChecklistRun[]
+
+  @@index([organizationId])
+  @@map("house_checklist_templates")
+}
+
+model HouseChecklistTemplateItem {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  templateId     String   @map("template_id") @db.Uuid
+  sortOrder      Int      @map("sort_order")
+  label          String
+  isRequired     Boolean  @default(true) @map("is_required")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization           @relation(fields: [organizationId], references: [id])
+  template     HouseChecklistTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([organizationId])
+  @@map("house_checklist_template_items")
+}
+
+model HouseChecklistRun {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  homeId         String    @map("home_id") @db.Uuid
+  templateId     String    @map("template_id") @db.Uuid
+  runOn          DateTime  @map("run_on") @db.Date
+  completedAt    DateTime? @map("completed_at")
+  completedById  String?   @map("completed_by_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization           @relation(fields: [organizationId], references: [id])
+  template     HouseChecklistTemplate @relation(fields: [templateId], references: [id])
+  items        HouseChecklistItem[]
+
+  @@index([organizationId, homeId, runOn])
+  @@map("house_checklist_runs")
+}
+
+model HouseChecklistItem {
+  id             String              @id @default(uuid()) @db.Uuid
+  organizationId String              @map("organization_id") @db.Uuid
+  runId          String              @map("run_id") @db.Uuid
+  label          String
+  status         ChecklistItemStatus @default(PENDING)
+  notes          String?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  run          HouseChecklistRun @relation(fields: [runId], references: [id])
+
+  @@index([organizationId])
+  @@map("house_checklist_items")
+}
+
+// ───────────────────────── Audit log (append-only) ─────────────────────────
+
+model AuditEvent {
+  id             String      @id @default(uuid()) @db.Uuid
+  organizationId String      @map("organization_id") @db.Uuid
+  actorUserId    String?     @map("actor_user_id") @db.Uuid
+  action         AuditAction
+  resourceType   String      @map("resource_type")
+  resourceId     String?     @map("resource_id") @db.Uuid
+  // IDs, field names and counts only. Never raw PHI.
+  metadata       Json        @default("{}")
+  ipAddress      String?     @map("ip_address")
+  userAgent      String?     @map("user_agent")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  actor        User?        @relation("Actor", fields: [actorUserId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, resourceType, resourceId])
+  @@map("audit_events")
 }
