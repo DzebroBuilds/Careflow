@@ -248,3 +248,8 @@ button:disabled { cursor:not-allowed; }
 .site-lead,.site-section-heading>p,.site-steps p,.site-area-card p { color:#65725f; }
 .site-hero-note,.site-promise span,.site-footer>p,.site-footer small { color:#707c68; }
 .cf-subtitle,.cf-stat p,.cf-stat span { color:#637366; }
+/* Supporting labels remain legible against every light homepage surface. */
+.site-kicker,.cf-site .cf-eyebrow,.site-hero-note,.site-promise span,.step-top>span,.site-footer>p,.site-footer>div,.site-footer small { color:#5e7057; }
+.site-cta .cf-eyebrow { color:#b1c8af; }
+:focus-visible { outline-color:#477b60; }
+.site-footer>div a { display:inline-flex; align-items:center; min-height:24px; }
