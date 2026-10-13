@@ -67,3 +67,7 @@ A working first version is not a certification of HIPAA compliance or clinical r
 ## Earlier scaffold
 
 The original Prisma schema, Docker setup, and docs/SCHEMA.md are retained as an earlier, unapplied proposal. The current RTH workspace uses Supabase Auth and home-based RLS, not that Prisma proposal. The old Vitest scaffold/config and PostCSS config are replaced by the current tested app toolchain. Do not run the older Prisma schema against this Supabase project.
+
+### Assistant team prototype
+
+Open `/demo/team` or choose **Your team** in the sample workspace. HR, Manager, Nurse, Documentation, and Quality Review each have two scripted findings, source references, editable follow-up drafts, human approval/dismissal, and session activity. Dismissal requires a reviewer note. This prototype is session-only and resets when the view is left or the home changes. It does not call an AI provider, send email, process real notes, or modify workspace records. The Nurse scenario flags documentation gaps for a licensed clinician; it never infers or changes medication doses. Connected/cloud workspaces link to the separate sample prototype.
