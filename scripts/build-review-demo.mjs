@@ -24,11 +24,11 @@ await mkdir(join(stage, 'src/app/setup'), { recursive: true });
 await writeFile(join(stage, 'src/app/setup/page.tsx'), `import Link from 'next/link';
 export default function ReviewInfo(){return <main className="cf-gate"><section className="cf-panel max-w-xl"><p className="cf-eyebrow">CAREFLOW / FRIEND REVIEW</p><h1 className="text-3xl mt-4">Explore the sample workspace</h1><p className="mt-4">This public preview uses fictional examples only. Changes are saved in your own browser. Sign-in, shared records, evidence uploads, email delivery, and live AI agents are not enabled.</p><p className="mt-4">Try creating a sample record, filtering the review queue, approving a record, and exploring Your team. Use Settings to reset your sample edits.</p><Link className="cf-primary mt-6" href="/demo">Open the demo</Link></section></main>}`);
 // Remove any possible cloud configuration from the exported browser bundle.
-const supabase = `import type { createClient } from '@supabase/supabase-js';
+const supabase = `import type { SupabaseClient } from '@supabase/supabase-js';
 export const configured = false;
 export const productionEnabled = false;
 export const sampleDataOnly = true;
-export const supabase = null as ReturnType<typeof createClient> | null;`;
+export const supabase = null as SupabaseClient | null;`;
 await writeFile(join(stage, 'src/lib/supabase.ts'), supabase);
 await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
 const result = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], { cwd: stage, stdio: 'inherit' });
