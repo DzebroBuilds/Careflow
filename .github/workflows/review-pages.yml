@@ -1,7 +1,7 @@
 name: Publish CareFlow review demo
 on:
   push:
-    branches: [codex/careflow-workspace]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
