@@ -1,69 +1,16 @@
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
-}
+import Link from 'next/link';
+import Icon from '@/components/icon';
+import Reveal from '@/components/reveal';
+import ProductWalkthrough from '@/components/product-walkthrough';
+const areas=[['people','Resident records','Keep plans, contacts, and supporting evidence together.'],['shield','Staff readiness','Give orientation and training follow-ups a clear owner.'],['cross','Medication records','Organize review tasks and the evidence behind them.'],['flag','Incident follow-up','Track next steps from an open issue to a reviewed outcome.'],['file','Inspection binder','Find the documents you need without the paper chase.'],['clock','Owner reviews','Bring open decisions and evidence gaps into focus.']];
+export default function Home(){return <main className="cf-site">
+<Reveal/><a className="cf-skip" href="#main-content">Skip to content</a>
+<header className="site-header"><div className="site-container site-nav"><Link href="/" className="cf-brand" aria-label="CareFlow home"><span className="cf-logo"><Icon name="cross" size={21}/></span>CareFlow<span className="site-brand-dot">.</span></Link><nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#workspace">The workspace</a><Link href="/login">Sign in</Link></nav><Link className="cf-primary" href="/demo">Explore CareFlow <Icon name="arrow" size={16}/></Link></div></header>
+<section className="site-container site-hero" id="main-content" tabIndex={-1}><div className="site-hero-copy"><p className="site-kicker"><span/> A little more clarity. Every day.</p><h1>More time for care.<br/><em>Less chasing<br/>paperwork.</em></h1><p className="site-lead">Your home runs on a thousand small details. Bring records, responsibilities, and follow-ups together in one thoughtful workspace.</p><div className="site-actions"><Link className="cf-primary" href="/demo">Explore the workspace <Icon name="arrow" size={18}/></Link><a className="site-text-link" href="#how-it-works">See how it works <span>↗</span></a></div><div className="site-hero-note"><Icon name="home" size={16}/><span>Designed for Oregon Residential Treatment Homes</span></div></div>
+<ProductWalkthrough/></section>
+<div className="site-promise"><div className="site-container"><span>A home base for your daily readiness</span><p><Icon name="check" size={16}/> Clear responsibilities</p><p><Icon name="check" size={16}/> Connected evidence</p><p><Icon name="check" size={16}/> Focused reviews</p></div></div>
+<section className="site-container site-section" id="how-it-works" data-reveal><div className="site-section-heading"><div><p className="cf-eyebrow">FROM SCATTERED TO SETTLED</p><h2>The details matter.<br/>So does your peace of mind.</h2></div><p>CareFlow gives your team a shared view of what is ready, what needs attention, and who is moving it forward.</p></div><div className="site-steps">{[['01','Bring it together','A record, its supporting evidence, and the person responsible—all in the same place.','file'],['02','Know what comes next','Spot overdue follow-ups and open reviews. Start with the work that needs you most.','grid'],['03','Review with clarity','Move records through review and export a clear summary of your home’s next steps.','check']].map(([n,title,copy,icon])=><article key={n}><div className="step-top"><span>{n}</span><Icon name={icon} size={26}/></div><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
+<section className="site-workspace" id="workspace"><div className="site-container site-section" data-reveal><div className="site-section-heading"><div><p className="cf-eyebrow">ONE WORKSPACE. A CLEARER PICTURE.</p><h2>Made for the way<br/>your home works.</h2></div><Link href="/demo" className="site-text-link">Take a look inside <Icon name="arrow" size={18}/></Link></div><div className="site-area-grid">{areas.map(([icon,title,copy])=><Link href="/demo" className="site-area-card" key={title}><span className="site-area-icon"><Icon name={icon} size={24}/></span><h3>{title}</h3><p>{copy}</p><span className="site-area-arrow"><Icon name="arrow" size={18}/></span></Link>)}</div></div></section>
+<section className="site-container site-section" data-reveal><div className="site-cta"><div><p className="cf-eyebrow">A CALMER WAY TO STAY ORGANIZED</p><h2>Give the paperwork a home.<br/>Give your day some room.</h2><p>Explore a working sample. See what a clearer day could look like.</p></div><Link href="/demo" className="cf-primary">Try the sample workspace <Icon name="arrow" size={18}/></Link></div></section>
+<footer className="site-container site-footer"><Link href="/" className="cf-brand"><span className="cf-logo"><Icon name="cross" size={18}/></span>CareFlow</Link><p>Built to support readiness and thoughtful care.</p><div><Link href="/login">Sign in</Link><Link href="/setup">Setup & access</Link><span>© 2026 CareFlow</span></div><small>CareFlow supports your review; it does not certify regulatory compliance.</small></footer>
+</main>;}
