@@ -1,7 +1,7 @@
 import type { Entry, Category } from './workspace';
 
 export const navigation: {group:string;items:readonly (readonly [string,string,string])[]}[] = [
-  { group: 'Overview', items: [['Readiness center','Dashboard','grid'],['Calendar','Calendar','clock'],['Approvals','Approvals','check']] },
+  { group: 'Overview', items: [['Readiness center','Dashboard','grid'],['Compliance tracker','Compliance tracker','shield'],['Calendar','Calendar','clock'],['Approvals','Approvals','check']] },
   { group: 'Care', items: [['Residents','Resident records','people'],['Medication records','Medication documentation','cross'],['Incidents','Incidents & follow-up','flag']] },
   { group: 'Compliance', items: [['Inspection binder','Compliance documents','file'],['Support Documents','Support Documents','file'],['Corrective actions','Corrective actions','shield'],['House checklist','House checklist','check'],['Monthly reviews','Monthly reviews','clock'],['Reports','Reports','grid'],['Templates','Templates','file']] },
   { group: 'People', items: [['Staff orientation','Staff readiness & training','people'],['Your team','Assistant team','people']] },
