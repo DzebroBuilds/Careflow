@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CareFlow | Oregon RTH Readiness Workspace",
-  description: "A clearer way for Oregon Residential Treatment Home operators to stay inspection-ready.",
+  title: "CareFlow | Managed Readiness for Oregon RTH Operators",
+  description: "Managed documentation-readiness service in development for small Oregon RTH operators. Explore the fictional-data demo and discuss a founding pilot.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
