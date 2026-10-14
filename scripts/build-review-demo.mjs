@@ -9,7 +9,7 @@ const stage = await mkdtemp(join(root, '.pages-review-'));
 const basePath = process.env.CAREFLOW_REVIEW_BASE_PATH || '/Careflow';
 if (!/^\/[A-Za-z0-9_-]+$/.test(basePath)) throw new Error('Invalid review base path');
 await mkdir(join(stage, 'src/app'), { recursive: true });
-for (const name of ['src/components', 'src/lib', 'src/app/demo', 'public']) {
+for (const name of ['src/components', 'src/lib', 'src/app/demo', 'src/app/login', 'src/app/reset-password', 'src/app/verify', 'src/app/dashboard', 'public']) {
   await cp(join(root, name), join(stage, name), { recursive: true });
 }
 for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src/app/favicon.ico']) {
@@ -18,7 +18,7 @@ for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src
 const layout = (await readFile(join(root, 'src/app/layout.tsx'), 'utf8'))
   .replace('{children}</body>', '<aside style={{background:"#e8f0ea",color:"#234d3b",padding:"10px 20px",textAlign:"center",fontSize:14}}>CareFlow review demo · Fictional data only · Changes stay in this browser · AI assistants are prototypes</aside>{children}</body>');
 await writeFile(join(stage, 'src/app/layout.tsx'), layout);
-const page = (await readFile(join(root, 'src/app/page.tsx'), 'utf8')).replaceAll('href="/login"', 'href="/demo"').replaceAll('>Sign in<', '>Open demo<');
+const page = await readFile(join(root, 'src/app/page.tsx'), 'utf8');
 await writeFile(join(stage, 'src/app/page.tsx'), page);
 await mkdir(join(stage, 'src/app/setup'), { recursive: true });
 await writeFile(join(stage, 'src/app/setup/page.tsx'), `import Link from 'next/link';
