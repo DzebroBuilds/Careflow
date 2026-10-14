@@ -1,13 +1,20 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { configured, productionEnabled, supabase } from '@/lib/supabase';
+import { useEffect, useState } from 'react';
+import { configured, productionEnabled, supabase, authReturnType } from '@/lib/supabase';
 import { pilotInquiry } from '@/lib/offer';
 import './account-login.css';
 export default function AccountLogin(){
  const router=useRouter();const [reset,setReset]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [message,setMessage]=useState('');const [show,setShow]=useState(false);
  const enabled=configured&&productionEnabled;
+ useEffect(()=>{
+  if(!supabase||!enabled)return;
+  const routePassword=()=>{if(authReturnType==='invite'||authReturnType==='recovery'){sessionStorage.setItem('careflow-password-flow',String(Date.now()));router.replace('/reset-password');}};
+  const {data:{subscription}}=supabase.auth.onAuthStateChange((event,session)=>{if(session&&(event==='SIGNED_IN'||event==='PASSWORD_RECOVERY'))routePassword();});
+  void supabase.auth.getSession().then(({data})=>{if(data.session)routePassword();});
+  return()=>subscription.unsubscribe();
+ },[enabled,router]);
  async function submit(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();if(!supabase||!enabled||busy)return;
   const form=event.currentTarget;const values=new FormData(form);const email=String(values.get('email')).trim();setBusy(true);setError('');setMessage('');

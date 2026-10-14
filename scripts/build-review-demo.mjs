@@ -16,21 +16,23 @@ for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src
   await cp(join(root, name), join(stage, name));
 }
 const layout = (await readFile(join(root, 'src/app/layout.tsx'), 'utf8'))
-  .replace('{children}</body>', '<aside style={{background:"#e8f0ea",color:"#234d3b",padding:"10px 20px",textAlign:"center",fontSize:14}}>CareFlow review demo · Fictional data only · Changes stay in this browser · AI assistants are prototypes</aside>{children}</body>');
+  .replace('{children}</body>', '<aside style={{background:"#e8f0ea",color:"#234d3b",padding:"10px 20px",textAlign:"center",fontSize:14}}>CareFlow review demo · Fictional data only · Sample edits stay in this browser · Private test accounts use Supabase · AI assistants are prototypes</aside>{children}</body>');
 await writeFile(join(stage, 'src/app/layout.tsx'), layout);
 const page = await readFile(join(root, 'src/app/page.tsx'), 'utf8');
 await writeFile(join(stage, 'src/app/page.tsx'), page);
 await mkdir(join(stage, 'src/app/setup'), { recursive: true });
 await writeFile(join(stage, 'src/app/setup/page.tsx'), `import Link from 'next/link';
-export default function ReviewInfo(){return <main className="cf-gate"><section className="cf-panel max-w-xl"><p className="cf-eyebrow">CAREFLOW / PRODUCT PREVIEW</p><h1 className="text-3xl mt-4">Explore the sample workspace</h1><p className="mt-4">This public preview uses fictional examples only. Changes are saved in your own browser. Sign-in, shared records, evidence uploads, email delivery, and live AI agents are not enabled.</p><p className="mt-4">Try creating a sample record, filtering the review queue, approving a record, and preparing a Weekly owner review. Use Access & settings to reset your sample edits.</p><Link className="cf-primary mt-6" href="/demo">Open the demo</Link></section></main>}`);
-// Remove any possible cloud configuration from the exported browser bundle.
-const supabase = `import type { SupabaseClient } from '@supabase/supabase-js';
-export const configured = false;
-export const productionEnabled = false;
+export default function ReviewInfo(){return <main className="cf-gate"><section className="cf-panel max-w-xl"><p className="cf-eyebrow">CAREFLOW / PRODUCT PREVIEW</p><h1 className="text-3xl mt-4">Explore the sample workspace</h1><p className="mt-4">This public preview uses fictional examples only. Changes are saved in your own browser. The sample dashboard saves edits in your browser. Private test accounts use Supabase and fictional data only. Live AI agents are not enabled.</p><p className="mt-4">Try creating a sample record, filtering the review queue, approving a record, and preparing a Weekly owner review. Use Access & settings to reset your sample edits.</p><Link className="cf-primary mt-6" href="/demo">Open the demo</Link></section></main>}`);
+// Explicit publishable-only test configuration; never copy local env files or enable real data.
+const supabase = `import { createClient } from '@supabase/supabase-js';
+import { reviewAuth } from './review-auth';
+export const configured = reviewAuth.enabled;
+export const productionEnabled = reviewAuth.enabled;
 export const sampleDataOnly = true;
-export const supabase = null as SupabaseClient | null;`;
+export const authReturnType = typeof window === 'undefined' ? null : new URLSearchParams(window.location.hash.slice(1)).get('type');
+export const supabase = configured ? createClient(reviewAuth.url, reviewAuth.publishableKey, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:typeof window==='undefined'?undefined:window.sessionStorage}}) : null;`;
 await writeFile(join(stage, 'src/lib/supabase.ts'), supabase);
-await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
+await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',env:{NEXT_PUBLIC_CAREFLOW_BASE_PATH:${JSON.stringify(basePath)}},basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
 const result = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], { cwd: stage, stdio: 'inherit' });
 if (result.status !== 0) process.exit(result.status || 1);
 await writeFile(join(stage, 'out/.nojekyll'), '');
