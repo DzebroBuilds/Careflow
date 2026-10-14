@@ -49,3 +49,9 @@ export function houseCompliance(entries:Entry[],homeId:string,today:string) {
   return {items,score:Math.round(items.reduce((sum,i)=>sum+i.raw,0)/requirements.length),missing:items.filter(i=>!i.records.length).length,unmapped:homeEntries.filter(e=>!items.some(i=>i.records.some(r=>r.id===e.id))).length};
 }
 export function overallCompliance(entries:Entry[],homes:Home[],today:string) { return homes.length?Math.round(homes.reduce((sum,h)=>sum+houseCompliance(entries,h.id,today).score,0)/homes.length):null; }
+
+export function complianceReport(entries:Entry[],homes:Home[],today:string) {
+  const rows:unknown[][]=[['CareFlow checklist readiness report'],['Date',today],['Overall score',overallCompliance(entries,homes,today)??'No homes'],['Method','20 starter types; equal weighting; missing types score zero; metadata and human review; not OHA certification'],[],['Home','House score','Document type','Rule','Type score','Linked records','Evidence files','Approved records','Human-reviewed records']];
+  for(const home of homes) {const result=houseCompliance(entries,home.id,today);for(const item of result.items) rows.push([home.name,result.score,item.requirement.name,item.requirement.rule,item.score,item.records.length,item.records.filter(e=>assessRecord(e,today).attached).length,item.records.filter(e=>e.status==='Complete').length,item.records.filter(e=>assessRecord(e,today).reviewed).length]);}
+  return rows;
+}
