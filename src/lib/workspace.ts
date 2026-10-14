@@ -26,6 +26,6 @@ export function sampleWorkspace(): Workspace {
 }
 export function csvCell(value: unknown) { let s = String(value ?? ''); if (/^[\s]*[=+@-]/.test(s)) s = `'${s}`; return `"${s.replaceAll('"','""')}"`; }
 export function reviewCsv(home: Home, entries: Entry[]) {
-  const rows = [['CareFlow review packet',home.name],['Generated',new Date().toISOString()],['Readiness',readiness(entries)===null?'No records':`${readiness(entries)}%`],[],['Area','Task','Subject','Assignee','Due','Priority','Status','Notes','Evidence file'],...entries.map(e=>[e.category,e.title,e.subject,e.assignee,e.due_date,e.priority,e.status,e.notes,e.evidence_name??''])];
+  const rows = [['CareFlow review packet',home.name],['Generated',new Date().toISOString()],['Record completion',readiness(entries)===null?'No records':`${readiness(entries)}%`],[],['Area','Task','Subject','Assignee','Due','Priority','Status','Notes','Evidence file'],...entries.map(e=>[e.category,e.title,e.subject,e.assignee,e.due_date,e.priority,e.status,e.notes,e.evidence_name??''])];
   return '\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
 }
