@@ -1,5 +1,6 @@
 import test from 'node:test';
 import './manager.test.mjs';
+import './auth-storage.test.mjs';
 import assert from 'node:assert/strict';
 import { gmailMessage, eventTimes, sheetRows, sheetBounds, documentText } from '../src/lib/google-workspace.ts';
 test('Gmail messages preserve Unicode and reject header injection',()=>{const raw=gmailMessage('sample@example.com','Selam · review','Hello\nሰላም');const mime=new TextDecoder().decode(Uint8Array.from(atob(raw.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0)));assert.ok(mime.startsWith('To: sample@example.com\r\n'));assert.ok(mime.includes('Content-Transfer-Encoding: base64'));const body=mime.split('\r\n\r\n')[1].replaceAll('\r\n','');assert.equal(new TextDecoder().decode(Uint8Array.from(atob(body),c=>c.charCodeAt(0))),'Hello\nሰላም');assert.throws(()=>gmailMessage('sample@example.com\r\nBcc:other@example.com','Review','Hello'));assert.throws(()=>gmailMessage('sample@example.com','Review\r\nBcc:other@example.com','Hello'));});

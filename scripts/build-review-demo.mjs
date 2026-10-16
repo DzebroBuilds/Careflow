@@ -26,11 +26,12 @@ export default function ReviewInfo(){return <main className="cf-gate"><section c
 // Explicit publishable-only test configuration; never copy local env files or enable real data.
 const supabase = `import { createClient } from '@supabase/supabase-js';
 import { reviewAuth } from './review-auth';
+import { authStorage, authStorageKey } from './auth-storage';
 export const configured = reviewAuth.enabled;
 export const productionEnabled = reviewAuth.enabled;
 export const sampleDataOnly = true;
 export const authReturnType = typeof window === 'undefined' ? null : new URLSearchParams(window.location.hash.slice(1)).get('type');
-export const supabase = configured ? createClient(reviewAuth.url, reviewAuth.publishableKey, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:typeof window==='undefined'?undefined:window.sessionStorage}}) : null;`;
+export const supabase = configured ? createClient(reviewAuth.url, reviewAuth.publishableKey, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:authStorageKey,storage:typeof window==='undefined'?undefined:authStorage}}) : null;`;
 await writeFile(join(stage, 'src/lib/supabase.ts'), supabase);
 await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',env:{NEXT_PUBLIC_CAREFLOW_BASE_PATH:${JSON.stringify(basePath)}},basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
 const result = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], { cwd: stage, stdio: 'inherit' });

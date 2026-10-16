@@ -17,6 +17,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, configured, productionEnabled, sampleDataOnly } from '@/lib/supabase';
 import { categories, sampleWorkspace, readiness, isOverdue, localDate, reviewCsv, type Workspace as Data, type Entry, type Home, type Category } from '@/lib/workspace';
 
+import { rememberedUntil } from '@/lib/auth-storage';
+
 const blank: Data = {homes:[],entries:[],activity:[]};
 const demoKey = 'careflow-demo-v1';
 
@@ -47,6 +49,8 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
 
   const loadCloud = useCallback(async () => {
     if (!supabase) return;
+    const deadline = rememberedUntil();
+    if (deadline && deadline <= Date.now()) { await supabase.auth.signOut({scope:'local'}); router.replace('/login'); return; }
     const {data:identity,error:identityError} = await supabase.auth.getUser();
     if (identityError || !identity.user) { router.replace('/login'); return; }
     const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -88,12 +92,21 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
     if (demo || !supabase || !productionEnabled) return;
     let timeout: ReturnType<typeof setTimeout>;
     const lock = () => { setData(blank); void supabase!.auth.signOut({scope:'local'}).finally(() => router.replace('/login')); };
-    const reset = () => { clearTimeout(timeout); timeout = setTimeout(lock, 15 * 60 * 1000); };
+    const reset = () => {
+      clearTimeout(timeout);
+      const deadline = rememberedUntil();
+      if (deadline && deadline <= Date.now()) { lock(); return; }
+      // A trusted personal browser keeps its verified session; shared browsers retain the idle timeout.
+      timeout = setTimeout(deadline ? reset : lock, deadline ? Math.min(deadline - Date.now(), 24 * 60 * 60 * 1000) : 15 * 60 * 1000);
+    };
+    const resume = () => { if (document.visibilityState === 'visible') reset(); };
+    document.addEventListener('visibilitychange', resume);
+    window.addEventListener('focus', reset);
     const events = ['pointerdown','keydown','touchstart'] as const;
     events.forEach(event => window.addEventListener(event, reset, {passive:true}));
     const {data:{subscription}} = supabase.auth.onAuthStateChange(event => { if(event==='SIGNED_OUT') {setData(blank);router.replace('/login');} });
     reset();
-    return () => { clearTimeout(timeout); subscription.unsubscribe(); events.forEach(event => window.removeEventListener(event, reset)); };
+    return () => { clearTimeout(timeout); subscription.unsubscribe(); document.removeEventListener('visibilitychange', resume); window.removeEventListener('focus', reset); events.forEach(event => window.removeEventListener(event, reset)); };
   }, [demo, router]);
 
   const home = data.homes.find(h=>h.id===homeId);
@@ -203,4 +216,4 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
 }
 function Stat({label,value,hint,alert=false}:{label:string;value:string;hint:string;alert?:boolean}) { return <article className="cf-stat"><p>{label}</p><strong className={alert?'!text-[#af4b36]':''}>{value}</strong><span>{hint}</span></article>; }
 function Field({label,name,value,type='text',required=false,maxLength}:{label:string;name:string;value?:string;type?:string;required?:boolean;maxLength?:number}) {return <label>{label}<input name={name} className="cf-input" type={type} defaultValue={value} required={required} maxLength={maxLength}/></label>;}
-
+

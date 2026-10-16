@@ -267,3 +267,4 @@ button:disabled { cursor:not-allowed; }
 @media(prefers-reduced-transparency:reduce),(forced-colors:active){.site-header,.site-product,.product-floating,.cf-dialog,.cf-topbar{background:#fafbf7;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:#718177;box-shadow:none}}
 @media print{.site-header{position:static}.site-header,.site-product,.product-floating,.cf-dialog,.cf-topbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}}
 
+.cf-remember{display:flex!important;align-items:center;gap:10px;font-size:14px!important;line-height:1.6}.cf-remember input{width:18px!important;height:18px;flex:0 0 18px;accent-color:#294a37}
