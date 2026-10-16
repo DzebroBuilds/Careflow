@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Icon from './icon';
+import ManagerChat from './manager-chat';
 import './team-lab.css';
 
 type RoleId = 'hr' | 'manager' | 'nurse' | 'documents' | 'quality';
@@ -35,6 +36,7 @@ export default function TeamLab({ homeName }: { homeName: string }) {
     setEvents(current=>[`${role.name}: ${status==='approved'?'sample follow-up approved; no message sent':'finding set dismissed with a reviewer note'}.`,...current]);
   }
   return <div className="team-lab">
+    <ManagerChat demo homeName={homeName}/>
     <div className="team-test-banner"><Icon name="shield"/><div><strong>Assistant testing · fictional scenarios only</strong><p>Scripted examples, not a live AI review. No employee emails, resident data, or clinical actions are sent or changed. This session resets when you leave this view.</p></div></div>
     <div className="team-summary"><span><strong>5</strong> assigned roles</span><span><strong>{count}</strong> scenarios reviewed</span><span><strong>{approved}</strong> follow-ups approved</span><span className="team-home"><Icon name="home" size={15}/>{homeName} · sample context</span></div>
     <div className="team-layout"><nav className="team-roster" aria-label="Assistant roles">{assistants.map(item=><button type="button" key={item.id} onClick={()=>setSelected(item.id)} aria-pressed={selected===item.id} className={selected===item.id?'selected':''}><span className={`team-role-icon ${item.id}`}><Icon name={item.icon}/></span><span><strong>{item.name}</strong><small>{reviews[item.id]?.status==='approved'?'Approved · simulated':reviews[item.id]?.status==='dismissed'?'Dismissed · simulated':reviews[item.id]?'Awaiting your review':'Ready to test'}</small></span><Icon name="arrow" size={16}/></button>)}</nav>
