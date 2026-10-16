@@ -253,3 +253,17 @@ button:disabled { cursor:not-allowed; }
 .site-cta .cf-eyebrow { color:#b1c8af; }
 :focus-visible { outline-color:#477b60; }
 .site-footer>div a { display:inline-flex; align-items:center; min-height:24px; }
+/* Frosted surfaces: opaque by default, enhanced only when blur is supported. */
+.site-header{position:sticky;top:0;z-index:30;background:#faf9f6;border-bottom:1px solid #dce3d7;box-shadow:0 6px 24px -18px #243f2f40}
+.site-product,.product-floating,.cf-dialog,.cf-topbar{background-color:#fafbf7;border-color:#dce5d7}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .site-header,.cf-topbar{background:rgba(250,249,246,.84);-webkit-backdrop-filter:blur(20px) saturate(125%);backdrop-filter:blur(20px) saturate(125%);border-bottom-color:rgba(98,122,92,.2)}
+  .site-product{background:rgba(255,255,251,.88);-webkit-backdrop-filter:blur(16px) saturate(115%);backdrop-filter:blur(16px) saturate(115%);border-color:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 24px 65px -28px #294a3740}
+  .product-floating{background:rgba(255,255,251,.86);-webkit-backdrop-filter:blur(18px) saturate(120%);backdrop-filter:blur(18px) saturate(120%);border-color:rgba(255,255,255,.95);box-shadow:inset 0 1px 0 #fff,0 12px 32px #294a371a}
+  .cf-dialog{background:rgba(250,252,247,.96);-webkit-backdrop-filter:blur(22px) saturate(115%);backdrop-filter:blur(22px) saturate(115%);border-color:rgba(255,255,255,.95);box-shadow:inset 0 1px 0 #fff,0 24px 80px #142e2540}
+}
+.product-floating p{color:#596952}
+.cf-dialog .cf-input,.cf-dialog select,.cf-dialog textarea,.cf-dialog-actions{background-color:#fff}
+@media(prefers-reduced-transparency:reduce),(forced-colors:active){.site-header,.site-product,.product-floating,.cf-dialog,.cf-topbar{background:#fafbf7;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:#718177;box-shadow:none}}
+@media print{.site-header{position:static}.site-header,.site-product,.product-floating,.cf-dialog,.cf-topbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}}
+
