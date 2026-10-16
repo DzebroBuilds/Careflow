@@ -5,7 +5,7 @@ export const navigation: {group:string;items:readonly (readonly [string,string,s
   { group: 'Care', items: [['Residents','Resident document tasks','people'],['Medication records','Medication documentation','cross'],['Incidents','Incidents & follow-up','flag']] },
   { group: 'Compliance', items: [['Inspection binder','Compliance documents','file'],['Support Documents','Support Documents','file'],['Corrective actions','Corrective actions','shield'],['House checklist','House checklist','check'],['Monthly reviews','Monthly reviews','clock'],['Reports','Reports','grid'],['Templates','Templates','file']] },
   { group: 'People', items: [['Staff orientation','Staff readiness & training','people']] },
-  { group: 'Administration', items: [['Homes','Homes','home'],['Settings','Access & settings','settings'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
+  { group: 'Administration', items: [['Connected tools','Connected tools','grid'],['Homes','Homes','home'],['Settings','Access & settings','settings'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
   { group: 'Preview lab', items: [['Your team','Assistant prototypes','people']] },
 ] as const;
 export function sectionLabel(section: string) { return navigation.flatMap(g=>g.items).find(i=>i[0]===section)?.[1] || section; }
