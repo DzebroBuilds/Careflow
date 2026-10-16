@@ -216,3 +216,4 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
 }
 function Stat({label,value,hint,alert=false}:{label:string;value:string;hint:string;alert?:boolean}) { return <article className="cf-stat"><p>{label}</p><strong className={alert?'!text-[#af4b36]':''}>{value}</strong><span>{hint}</span></article>; }
 function Field({label,name,value,type='text',required=false,maxLength}:{label:string;name:string;value?:string;type?:string;required?:boolean;maxLength?:number}) {return <label>{label}<input name={name} className="cf-input" type={type} defaultValue={value} required={required} maxLength={maxLength}/></label>;}
+
