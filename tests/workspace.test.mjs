@@ -1,5 +1,7 @@
 import test from 'node:test';
 import './manager.test.mjs';
+import './metrics.test.mjs';
+import './residents.test.mjs';
 import './auth-storage.test.mjs';
 import assert from 'node:assert/strict';
 import { gmailMessage, eventTimes, sheetRows, sheetBounds, documentText } from '../src/lib/google-workspace.ts';

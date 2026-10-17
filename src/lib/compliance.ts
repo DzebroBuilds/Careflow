@@ -30,7 +30,15 @@ export function visibleNotes(notes:string) { return notes.replace(tag,'').replac
 export function withReviewMetadata(entry:Entry,notes:string) { const id=requirementId(entry);const reviews=[...entry.notes.matchAll(tag)].map(match=>match[0]);return [visibleNotes(notes),...(id?[`CareFlow requirement: ${id}`]:[]),...reviews].filter(Boolean).join('\n\n'); }
 export function requirementId(entry:Entry) { return entry.notes.match(/^CareFlow requirement: ([a-z-]+)$/m)?.[1] || ''; }
 export function linkRequirement(entry:Entry,id:string) { return entry.notes.replace(tag,'').replace(/^CareFlow requirement: .*\r?\n?/gm,'').trim()+`\n\nCareFlow requirement: ${id}`; }
-function fingerprint(e:Entry) {return JSON.stringify([requirementId(e),e.title,e.subject,e.evidence_path,e.evidence_name]);}
+// Detect accidental worksheet edits without copying a large worksheet into the review marker.
+// This checksum is not an electronic signature or an authorization boundary.
+function worksheetFingerprint(value:unknown) {
+  const canonical=(item:unknown):unknown=>Array.isArray(item)?item.map(canonical):item&&typeof item==='object'?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b)).map(([key,val])=>[key,canonical(val)])):item;
+  const text=JSON.stringify(canonical(value??{}));let first=2166136261,second=5381;
+  for(let i=0;i<text.length;i++){first=Math.imul(first^text.charCodeAt(i),16777619);second=Math.imul(second,33)^text.charCodeAt(i);}
+  return `${text.length}:${first>>>0}:${second>>>0}`;
+}
+function fingerprint(e:Entry) {const base=[requirementId(e),e.title,e.subject,e.evidence_path,e.evidence_name];return JSON.stringify(e.document_type?[...base,e.resident_id,e.document_type,e.document_period,worksheetFingerprint(e.document_data),e.template_version]:base);}
 export function readReview(entry:Entry):boolean[] {
   try {const matches=[...entry.notes.matchAll(tag)];if(matches.length!==1)return [false,false,false,false];const data=JSON.parse(matches[0][1]);return data.fingerprint===fingerprint(entry)&&typeof data.reviewedAt==='string'&&data.checks?.length===4&&data.checks.every((v:unknown)=>typeof v==='boolean')?data.checks:[false,false,false,false];}catch{return [false,false,false,false];}
 }
@@ -48,7 +56,7 @@ export function houseCompliance(entries:Entry[],homeId:string,today:string) {
   const items=requirements.map(requirement=>{const records=homeEntries.filter(e=>requirementId(e)===requirement.id&&e.category===requirement.category);const raw=records.length?records.reduce((sum,e)=>sum+assessRecord(e,today).score,0)/records.length:0;return {requirement,records,raw,score:Math.round(raw)};});
   return {items,score:Math.round(items.reduce((sum,i)=>sum+i.raw,0)/requirements.length),missing:items.filter(i=>!i.records.length).length,unmapped:homeEntries.filter(e=>!items.some(i=>i.records.some(r=>r.id===e.id))).length};
 }
-export function overallCompliance(entries:Entry[],homes:Home[],today:string) { return homes.length?Math.round(homes.reduce((sum,h)=>sum+houseCompliance(entries,h.id,today).score,0)/homes.length):null; }
+export function overallCompliance(entries:Entry[],homes:Home[],today:string) { return homes.length?Math.round(homes.reduce((sum,h)=>sum+houseCompliance(entries,h.id,today).items.reduce((total,item)=>total+item.raw,0)/requirements.length,0)/homes.length):null; }
 
 export function complianceReport(entries:Entry[],homes:Home[],today:string) {
   const rows:unknown[][]=[['CareFlow checklist readiness report'],['Date',today],['Overall score',overallCompliance(entries,homes,today)??'No homes'],['Method','20 starter types; equal weighting; missing types score zero; metadata and human review; not OHA certification'],[],['Home','House score','Document type','Rule','Type score','Linked records','Evidence files','Approved records','Human-reviewed records']];

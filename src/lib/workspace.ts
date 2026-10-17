@@ -1,10 +1,11 @@
+import type { Resident, DocumentType, DocumentData } from './residents';
 export const categories = ['Residents', 'Staff orientation', 'Medication records', 'Incidents', 'Inspection binder', 'Corrective actions', 'Monthly reviews'] as const;
 export type Category = typeof categories[number];
 export type Status = 'Open' | 'In review' | 'Complete';
 export type Home = { id: string; name: string; license_due: string; owner_id: string };
-export type Entry = { id: string; home_id: string; category: Category; title: string; subject: string; assignee: string; due_date: string; priority: 'Normal' | 'High'; status: Status; notes: string; evidence_path: string | null; evidence_name: string | null; updated_at: string };
+export type Entry = { id: string; home_id: string; category: Category; title: string; subject: string; assignee: string; due_date: string; priority: 'Normal' | 'High'; status: Status; notes: string; evidence_path: string | null; evidence_name: string | null; updated_at: string; resident_id?: string | null; document_type?: DocumentType | null; document_period?: string | null; document_data?: DocumentData | Record<string,never>; template_version?: number };
 export type Activity = { id: string; home_id: string; action: string; created_at: string; actor_id: string | null };
-export type Workspace = { homes: Home[]; entries: Entry[]; activity: Activity[] };
+export type Workspace = { residents?: Resident[]; homes: Home[]; entries: Entry[]; activity: Activity[] };
 export function localDate(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 export function isOverdue(entry: Entry, today = localDate()) { return entry.status !== 'Complete' && !!entry.due_date && entry.due_date < today; }
 export function readiness(entries: Entry[]) { return entries.length ? Math.round(entries.filter(e => e.status === 'Complete').length / entries.length * 100) : null; }
