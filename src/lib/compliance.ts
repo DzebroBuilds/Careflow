@@ -33,7 +33,7 @@ export function linkRequirement(entry:Entry,id:string) { return entry.notes.repl
 // Detect accidental worksheet edits without copying a large worksheet into the review marker.
 // This checksum is not an electronic signature or an authorization boundary.
 function worksheetFingerprint(value:unknown) {
-  const canonical=(item:unknown):unknown=>Array.isArray(item)?item.map(canonical):item&&typeof item==='object'?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b)).map(([key,val])=>[key,canonical(val)])):item;
+  const canonical=(item:unknown):unknown=>Array.isArray(item)?item.map(canonical):item&&typeof item==='object'?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([key,val])=>[key,canonical(val)])):item;
   const text=JSON.stringify(canonical(value??{}));let first=2166136261,second=5381;
   for(let i=0;i<text.length;i++){first=Math.imul(first^text.charCodeAt(i),16777619);second=Math.imul(second,33)^text.charCodeAt(i);}
   return `${text.length}:${first>>>0}:${second>>>0}`;
