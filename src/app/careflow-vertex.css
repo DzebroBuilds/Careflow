@@ -1,0 +1,52 @@
+
+/* Vertex-inspired CareFlow interface refresh. Presentation only: no permissions or data logic changed. */
+:root{--background:#f5f4f6;--foreground:#242328;--cf-green:#29282d;--cf-muted:#77747d;--cf-line:#ebe9ed;--cf-ease:cubic-bezier(.22,1,.36,1)}
+body{background:#f5f4f6;color:#242328}
+.cf-shell{background:#f5f4f6;grid-template-columns:224px minmax(0,1fr);gap:12px;padding:16px}
+.cf-sidebar{top:16px;height:calc(100dvh - 32px);border:1px solid #eeedf0;border-radius:25px;background:#fff;padding:23px 15px;box-shadow:0 5px 28px #1b182008}
+.cf-logo{background:#e66b55;color:white;border-radius:50%;box-shadow:none}
+.cf-brand{font-weight:650;color:#242328}
+.cf-nav{gap:7px}
+.cf-nav button{border-radius:15px;color:#77747d;font-size:13px;min-height:45px}
+.cf-nav button:hover{background:#f6f5f7;color:#242328}
+.cf-nav button.active{background:#29282d;color:#fff;box-shadow:0 5px 14px #24232818}
+.cf-nav button.active::before{display:none}
+.cf-sidebar-footer{background:#f6f5f7;color:#54515b;border:1px solid #eeedf0;border-radius:18px}
+.cf-main{min-width:0}
+.cf-topbar{background:#fff;border:1px solid #eeedf0;border-radius:24px;padding:17px 25px;box-shadow:0 4px 24px #1b182006}
+.cf-avatar{background:#f1e6e1;color:#a65543}
+.cf-content{max-width:1600px;padding:37px 22px}
+.cf-heading h1{font-size:clamp(30px,3vw,43px);font-weight:650;letter-spacing:-1.8px;color:#222126}
+.cf-subtitle{color:#807d86}
+.cf-eyebrow{color:#a09aa4}
+.cf-stats{gap:16px}
+.cf-stat,.cf-panel{border:1px solid #eeedf0;border-radius:24px;background:#fff;box-shadow:0 5px 26px #201b2707}
+.cf-stat{padding:26px}
+.cf-stat strong{color:#25242a;font-weight:650}
+.cf-stat:first-child::after{background:#e66b55}
+.cf-panel{padding:28px}
+.cf-review{border-radius:24px;background:#29282d}
+.cf-review::after{display:none}
+.cf-review h2{font-family:inherit;font-weight:550}
+.cf-primary{background:#29282d;border-radius:999px;padding:12px 20px;box-shadow:none}
+.cf-primary:hover{background:#444149}
+.cf-secondary{border-radius:999px;color:#29282d;border-color:#e9e7eb}
+.cf-secondary:hover{background:#f6f5f7}
+.cf-input{border-color:#e8e6eb;border-radius:13px;color:#29282d}
+.cf-input:focus{border-color:#e66b55;box-shadow:0 0 0 3px #e66b5520}
+.cf-progress{background:#f1eff2;border-radius:99px}
+.cf-progress span{background:#e66b55}
+.cf-record{border-color:#f0eef1;border-radius:13px}
+.cf-record:hover{background:#faf9fb}
+.cf-record-symbol{border-radius:13px;background:#f6f4f6;color:#827985}
+.cf-record-symbol.done{background:#e7f4ed;color:#387b5d}
+.cf-badge{border-radius:999px}
+.cf-dialog{border-radius:25px;border-color:#ebe9ed;box-shadow:0 30px 90px #1b182030}
+.cf-dialog::backdrop{background:#19171e70}
+.cf-auth{border-radius:26px;border-color:#eeedf0}
+.cf-gate{background:#f5f4f6}
+.cf-demo{border-radius:14px;margin-top:12px;background:#fff6e8;border:1px solid #f3e8d6}
+:focus-visible{outline:3px solid #e66b55;outline-offset:3px}
+@media(max-width:760px){.cf-shell{display:block;padding:8px}.cf-sidebar{position:relative;top:auto;height:auto;border-radius:20px;padding:16px}.cf-nav{margin-top:16px}.cf-nav button.active{color:#fff}.cf-topbar{margin-top:8px;border-radius:18px;padding:15px}.cf-content{padding:24px 10px}.cf-panel,.cf-stat,.cf-review{border-radius:19px}.cf-demo{margin:8px 0}}
+@media(prefers-reduced-motion:reduce){.cf-view-enter,.cf-progress span{animation:none!important}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+@media print{.cf-shell{padding:0;display:block}.cf-panel,.cf-stat{border:1px solid #ddd;box-shadow:none}}
