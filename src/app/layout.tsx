@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./careflow-vertex.css";
 
 export const metadata: Metadata = {
   title: "CareFlow | Managed Readiness for Oregon RTH Operators",
