@@ -12,7 +12,7 @@ await mkdir(join(stage, 'src/app'), { recursive: true });
 for (const name of ['src/components', 'src/lib', 'src/app/demo', 'src/app/login', 'src/app/reset-password', 'src/app/verify', 'src/app/dashboard', 'public']) {
   await cp(join(root, name), join(stage, name), { recursive: true });
 }
-for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src/app/favicon.ico']) {
+for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src/app/careflow-vertex.css', 'src/app/favicon.ico']) {
   await cp(join(root, name), join(stage, name));
 }
 const layout = (await readFile(join(root, 'src/app/layout.tsx'), 'utf8'))
