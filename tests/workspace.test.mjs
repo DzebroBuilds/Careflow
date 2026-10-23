@@ -33,3 +33,15 @@ test('weekly date range handles year rollover and does not mutate source records
 import './document-checks.test.mjs';
 
 import './document-import.test.mjs';
+
+import { parseDemoWorkspace } from '../src/lib/demo-storage.ts';
+test('demo snapshots preserve legacy edits and reject corrupt rows and cross-home references',()=>{
+  const sample=sampleWorkspace();
+  assert.deepEqual(parseDemoWorkspace(JSON.stringify(sample)),sample);
+  assert.throws(()=>parseDemoWorkspace('null'));
+  assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,entries:[null]})));
+  assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,entries:[{...sample.entries[0],home_id:'unknown'}]})));
+  assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,entries:[{...sample.entries[0],notes:42}]})));
+  assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,residents:[{id:'bad'}]})));
+  assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,homes:[sample.homes[0],sample.homes[0]]})));
+});
