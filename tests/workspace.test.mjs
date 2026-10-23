@@ -45,3 +45,22 @@ test('demo snapshots preserve legacy edits and reject corrupt rows and cross-hom
   assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,residents:[{id:'bad'}]})));
   assert.throws(()=>parseDemoWorkspace(JSON.stringify({...sample,homes:[sample.homes[0],sample.homes[0]]})));
 });
+
+import { todayAttention } from '../src/lib/today-attention.ts';
+test('today attention excludes other homes and completed work, with overlapping reasons counted once',()=>{
+  const d=sampleWorkspace(), h=d.homes[0].id, e=d.entries[0];
+  const items=[{...e,id:'late',due_date:'2026-10-10',assignee:'',status:'In review',category:'Incidents'},{...e,id:'done',status:'Complete',due_date:'2026-10-01'},{...e,id:'other',home_id:d.homes[1].id,due_date:'2026-10-01'},{...e,id:'future',due_date:'2026-11-01'},{...e,id:'today',due_date:'2026-10-23'}];
+  const rows=todayAttention(items,h,'2026-10-23');
+  assert.deepEqual(rows.map(r=>r.entry.id),['late','today']);
+  assert.deepEqual(rows[0].reasons.map(r=>r.id),['overdue','incident','review','owner']);
+  assert.deepEqual(rows[1].reasons.map(r=>r.id),['today']);
+  assert.equal(todayAttention(items,'missing','2026-10-23').length,0);
+});
+test('attention evidence flags only expected documents; ties respect priority and do not mutate records',()=>{
+  const e=sampleWorkspace().entries[0], before=JSON.stringify(e);
+  const linked={...e,id:'linked',notes:linkRequirement(e,'summary'),due_date:'2026-12-01'};
+  const rows=todayAttention([{...e,id:'plain',due_date:'2026-12-01'},linked,{...linked,id:'file',evidence_path:'sample/file'},{...e,id:'high',priority:'High',due_date:'2026-10-23'},{...e,id:'normal',due_date:'2026-10-23'}],e.home_id,'2026-10-23');
+  assert.deepEqual(rows.map(r=>r.entry.id),['high','normal','linked']);
+  assert.deepEqual(rows[2].reasons.map(r=>r.id),['evidence']);
+  assert.equal(JSON.stringify(e),before);
+});
