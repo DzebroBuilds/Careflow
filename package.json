@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/workspace.test.mjs && node tests/database.mjs"
+    "test": "node --test tests/workspace.test.mjs tests/quickbooks.test.mjs && node tests/database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

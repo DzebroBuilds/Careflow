@@ -9,7 +9,7 @@ const stage = await mkdtemp(join(root, '.pages-review-'));
 const basePath = process.env.CAREFLOW_REVIEW_BASE_PATH || '/Careflow';
 if (!/^\/[A-Za-z0-9_-]+$/.test(basePath)) throw new Error('Invalid review base path');
 await mkdir(join(stage, 'src/app'), { recursive: true });
-for (const name of ['src/components', 'src/lib', 'src/app/demo', 'src/app/login', 'src/app/reset-password', 'src/app/verify', 'src/app/dashboard', 'public']) {
+for (const name of ['src/components', 'src/lib', 'src/app/demo', 'src/app/login', 'src/app/reset-password', 'src/app/verify', 'src/app/dashboard', 'src/app/intuit', 'public']) {
   await cp(join(root, name), join(stage, name), { recursive: true });
 }
 for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src/app/careflow-vertex.css', 'src/app/favicon.ico']) {
@@ -33,7 +33,7 @@ export const sampleDataOnly = true;
 export const authReturnType = typeof window === 'undefined' ? null : new URLSearchParams(window.location.hash.slice(1)).get('type');
 export const supabase = configured ? createClient(reviewAuth.url, reviewAuth.publishableKey, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:authStorageKey,storage:typeof window==='undefined'?undefined:authStorage}}) : null;`;
 await writeFile(join(stage, 'src/lib/supabase.ts'), supabase);
-await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',env:{NEXT_PUBLIC_CAREFLOW_BASE_PATH:${JSON.stringify(basePath)}},basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
+await writeFile(join(stage, 'next.config.mjs'), `export default {outputFileTracingRoot:process.cwd(),output:'export',env:{NEXT_PUBLIC_CAREFLOW_BASE_PATH:${JSON.stringify(basePath)},NEXT_PUBLIC_CAREFLOW_INTUIT_ENABLED:${JSON.stringify(process.env.CAREFLOW_INTUIT_SANDBOX_ENABLED!=='false'?'true':'false')}},basePath:${JSON.stringify(basePath)},trailingSlash:true,images:{unoptimized:true},reactCompiler:true,experimental:{cpus:1,webpackBuildWorker:false,staticGenerationMaxConcurrency:1}};`);
 const result = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], { cwd: stage, stdio: 'inherit' });
 if (result.status !== 0) process.exit(result.status || 1);
 await writeFile(join(stage, 'out/.nojekyll'), '');
