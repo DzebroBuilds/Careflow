@@ -9,7 +9,11 @@ const store={
  async saveAttempt(attempt:Record<string,string>) {checked(await admin.from('quickbooks_oauth_attempts').upsert(attempt,{onConflict:'owner_id'}));},
  async takeAttempt(owner:string,state:string,challenge:string,after:string) {return checked(await admin.from('quickbooks_oauth_attempts').delete().eq('owner_id',owner).eq('state_hash',state).eq('challenge',challenge).gt('expires_at',after).select('owner_id').maybeSingle());},
  async saveConnection(connection:Record<string,string>) {checked(await admin.from('quickbooks_connections').insert(connection));},
- async removeConnection(owner:string) {checked(await admin.from('quickbooks_connections').delete().eq('owner_id',owner).eq('environment','sandbox'));},
+ async removeConnection(owner:string,lease:string) {checked(await admin.from('quickbooks_connections').delete().eq('owner_id',owner).eq('environment','sandbox').eq('sync_lock_id',lease));},
+ async acquireConnection(owner:string,lease:string,until:string,after:string) {return checked(await admin.from('quickbooks_connections').update({sync_lock_id:lease,sync_lock_until:until}).eq('owner_id',owner).eq('environment','sandbox').or(`sync_lock_until.is.null,sync_lock_until.lt.${after}`).select('*').maybeSingle());},
+ async releaseConnection(owner:string,lease:string) {checked(await admin.from('quickbooks_connections').update({sync_lock_id:null,sync_lock_until:null}).eq('owner_id',owner).eq('environment','sandbox').eq('sync_lock_id',lease));},
+ async saveRefresh(owner:string,lease:string,cipher:string) {checked(await admin.from('quickbooks_connections').update({refresh_cipher:cipher}).eq('owner_id',owner).eq('environment','sandbox').eq('sync_lock_id',lease).gt('sync_lock_until',new Date().toISOString()).select('owner_id').single());},
+ async saveEmployees(owner:string,lease:string,employees:{id:string;name:string;active:boolean}[],syncedAt:string) {checked(await admin.from('quickbooks_connections').update({employee_snapshot:employees,employees_synced_at:syncedAt}).eq('owner_id',owner).eq('environment','sandbox').eq('sync_lock_id',lease).gt('sync_lock_until',new Date().toISOString()).select('owner_id').single());},
  async removeAttempt(owner:string) {checked(await admin.from('quickbooks_oauth_attempts').delete().eq('owner_id',owner));},
 };
 const handler=createHandler({

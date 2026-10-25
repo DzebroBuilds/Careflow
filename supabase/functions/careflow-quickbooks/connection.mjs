@@ -1,3 +1,4 @@
+import { synchronizeEmployees } from './employees.mjs';
 const encoder = new TextEncoder();
 const tokenURL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 const revokeURL = 'https://developer.api.intuit.com/v2/oauth2/tokens/revoke';
@@ -44,14 +45,14 @@ export function createHandler({config,authenticate,store,fetcher=fetch,now=()=>D
    if(!auth?.startsWith('Bearer '))throw new Failure('Sign in to CareFlow first.',401);
    const text=await req.text(); if(text.length>12000)throw new Failure('Request is too large.',413);
    let input;try{input=JSON.parse(text);}catch{throw new Failure('Invalid request.');}
-   if(!input||typeof input!=='object'||!['status','start','complete','disconnect'].includes(input.action)||!/^[-a-f0-9]{36}$/i.test(input.homeId||''))throw new Failure('Invalid request.');
+   if(!input||typeof input!=='object'||!['status','start','complete','disconnect','syncEmployees'].includes(input.action)||!/^[-a-f0-9]{36}$/i.test(input.homeId||''))throw new Failure('Invalid request.');
    // authenticate performs a fresh Auth lookup, verifies MFA and actual home ownership.
    const owner=await authenticate(auth.slice(7),input.homeId);
    if(!owner)throw new Failure('Owner access and authenticator verification are required.',403);
    const ready=!!(config.clientId&&config.clientSecret&&config.encryptionKey&&config.redirectURI);
    if(input.action==='status') {
     const connection=await store.connection(owner);
-    return json({ready,environment:'sandbox',connected:!!connection,companyName:connection?.company_name??null,verifiedAt:connection?.verified_at??null});
+    return json({ready,environment:'sandbox',connected:!!connection,companyName:connection?.company_name??null,verifiedAt:connection?.verified_at??null,employees:connection?.employee_snapshot??[],employeesSyncedAt:connection?.employees_synced_at??null});
    }
    if(!ready)throw new Failure('Intuit sandbox app setup is not complete yet.',503);
    const redirect=new URL(config.redirectURI);
@@ -80,14 +81,39 @@ export function createHandler({config,authenticate,store,fetcher=fetch,now=()=>D
     await store.saveConnection({owner_id:owner,environment:'sandbox',realm_id:input.realmId,company_name:company.CompanyName.slice(0,200),refresh_cipher:await seal(tokens.refresh_token,config.encryptionKey,`${owner}:sandbox:${input.realmId}`),verified_at:verifiedAt});
     return json({connected:true,environment:'sandbox',companyName:company.CompanyName.slice(0,200),verifiedAt});
    }
-   const connection=await store.connection(owner);
-   if(connection) {
-    const token=await unseal(connection.refresh_cipher,config.encryptionKey,`${owner}:sandbox:${connection.realm_id}`);
-    await intuit(revokeURL,{method:'POST',headers:{Authorization:basic(),'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({token})});
-    await store.removeConnection(owner);
+   const existing=await store.connection(owner);
+   if(!existing) {
+    if(input.action==='syncEmployees')throw new Failure('Connect a sandbox company first.',409);
+    await store.removeAttempt(owner);return json({connected:false,environment:'sandbox'});
    }
-   await store.removeAttempt(owner);
-   return json({connected:false,environment:'sandbox'});
+   const lease=randomSecret();
+   const connection=await store.acquireConnection(owner,lease,new Date(now()+300000).toISOString(),new Date(now()).toISOString());
+   if(!connection)throw new Failure('Another connection operation is running. Wait briefly and retry.',409);
+   try {
+    const context=`${owner}:sandbox:${connection.realm_id}`;
+    const token=await unseal(connection.refresh_cipher,config.encryptionKey,context);
+    if(input.action==='syncEmployees') {
+     const result=await synchronizeEmployees({connection,now,
+      refresh:async()=>{
+       const response=await intuit(tokenURL,{method:'POST',headers:{Authorization:basic(),'Content-Type':'application/x-www-form-urlencoded',Accept:'application/json'},body:new URLSearchParams({grant_type:'refresh_token',refresh_token:token})});
+       return response.json();
+      },
+      saveRefresh:async(refresh)=>store.saveRefresh(owner,lease,await seal(refresh,config.encryptionKey,context)),
+      fetchPage:async(access,start)=>{
+       const url=new URL(`https://sandbox-quickbooks.api.intuit.com/v3/company/${connection.realm_id}/query`);
+       url.searchParams.set('query',`select * from Employee where Active in (true, false) startposition ${start} maxresults 1000`);
+       const response=await intuit(url.href,{headers:{Authorization:`Bearer ${access}`,Accept:'application/json'}});
+       return response.json();
+      },
+      saveSnapshot:async(employees,syncedAt)=>store.saveEmployees(owner,lease,employees,syncedAt),
+     });
+     return json({environment:'sandbox',companyName:connection.company_name,...result});
+    }
+    await intuit(revokeURL,{method:'POST',headers:{Authorization:basic(),'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({token})});
+    await store.removeConnection(owner,lease);await store.removeAttempt(owner);
+    return json({connected:false,environment:'sandbox'});
+   } finally {await store.releaseConnection(owner,lease);}
+
   } catch(error) {
    // Never return provider bodies, tokens, raw database errors, or stack traces.
    return json({error:error instanceof Failure?error.message:'The connection could not be completed. Try again or contact the CareFlow owner.'},error instanceof Failure?error.status:500);
