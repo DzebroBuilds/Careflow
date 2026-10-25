@@ -89,6 +89,17 @@ await db.exec("set request.jwt.claim.aal='aal2';");
 const activity=(await db.query('select * from public.activity')).rows;
 assert.ok(activity.length>=5);
 assert.ok(activity.some(a=>a.action==='Record status changed to Complete'));
+// Owner revocation removes database access and produces an immutable audit event.
+await asUser(staff);
+assert.equal((await db.query(`delete from public.home_members where home_id='${home}' and user_id='${viewer}' returning user_id`)).rows.length,0);
+await asUser(owner);
+assert.equal((await db.query(`delete from public.home_members where home_id='${home}' and user_id='${staff}' returning user_id`)).rows.length,1);
+assert.ok((await db.query(`select action from public.activity where home_id='${home}' and action='Team access removed'`)).rows.length>=1);
+await asUser(staff);
+assert.equal((await db.query(`select * from public.homes where id='${home}'`)).rows.length,0);
+assert.equal((await db.query(`select * from public.records where home_id='${home}'`)).rows.length,0);
+assert.equal((await db.query(`select * from public.residents where home_id='${home}'`)).rows.length,0);
+assert.equal((await db.query(`select * from storage.objects where bucket_id='evidence'`)).rows.length,0);
 await db.exec(`reset role;set role anon;`);
 await denied('select * from public.records');
 await denied('select careflow_private.home_role(null)');
