@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { intuitEnabled, quickbooks, startQuickbooks } from '@/lib/quickbooks';
 type Employee={id:string;name:string;active:boolean};
 type Status={connected:boolean;ready:boolean;companyName:string|null;verifiedAt:string|null;employees?:Employee[];employeesSyncedAt?:string|null};
@@ -9,7 +10,7 @@ export default function QuickbooksConnection({demo,owner,homeId}:{demo:boolean;o
  const enabled=!demo&&owner&&!!homeId&&intuitEnabled;
  return <section className="cf-panel mb-6" aria-labelledby="quickbooks-heading"><div className="flex items-center justify-between gap-4"><div><p className="cf-eyebrow">Finance integration · Sandbox</p><h2 id="quickbooks-heading">Intuit QuickBooks</h2></div><span className="cf-badge">{status?.connected?'Company verified':'Not connected'}</span></div>
  <p className="mt-4 text-sm leading-6">Connect a QuickBooks test company and import its employee directory. This test reads names and active status only. It does not send records to QuickBooks or run payroll.</p>
- {demo?<p className="cf-notice mt-4">The sample workspace cannot connect to financial accounts. Use your private owner account for sandbox testing.</p>:!owner?<p className="cf-notice mt-4">The home owner manages this connection.</p>:!intuitEnabled?<p className="cf-notice mt-4">Awaiting Intuit developer app setup.</p>:null}
+ {demo?<p className="cf-notice mt-4">The sample workspace cannot connect to financial accounts. Use your private owner account for sandbox testing. <Link className="underline" href="/dashboard/quickbooks">Open private Intuit QuickBooks</Link></p>:!owner?<p className="cf-notice mt-4">The home owner manages this connection.</p>:!intuitEnabled?<p className="cf-notice mt-4">Awaiting Intuit developer app setup.</p>:null}
  {status&&<p className="mt-4 text-sm" role="status">{status.connected?`${status.companyName} · Sandbox company verified${status.verifiedAt?' on '+new Date(status.verifiedAt).toLocaleString():''}.`:status.ready?'Ready to connect your sandbox company.':'Server credentials still need setup.'}</p>}
  {error&&<p role="alert" className="cf-error mt-4">{error}</p>}
  <div className="flex flex-wrap gap-3 mt-5"><button className="cf-secondary" disabled={!enabled||busy} onClick={()=>void run(async()=>setStatus(await quickbooks('status',homeId)))}>Check connection</button><button className="cf-primary" disabled={!enabled||busy||status?.connected===true||status?.ready!==true} onClick={()=>void run(()=>startQuickbooks(homeId))}>{busy?'Working…':'Connect sandbox company'}</button>{status?.connected&&<><button className="cf-primary" disabled={busy} onClick={()=>void run(async()=>{setSyncMessage('');const result=await quickbooks('syncEmployees',homeId);setStatus(current=>current?{...current,employees:result.employees,employeesSyncedAt:result.syncedAt}:current);const summary=result.summary;setSyncMessage(`Test sync complete: ${summary.added} added, ${summary.updated} updated, ${summary.unchanged} unchanged, ${summary.removed} removed from the saved directory.`);})}>{busy?'Working...':'Run employee test sync'}</button><button className="cf-secondary" disabled={busy} onClick={()=>setConfirm(true)}>Disconnect</button></>}<a className="cf-secondary" href="https://developer.intuit.com/app/developer/dashboard" target="_blank" rel="noopener noreferrer">Intuit Developer portal ↗</a></div>
@@ -18,4 +19,3 @@ export default function QuickbooksConnection({demo,owner,homeId}:{demo:boolean;o
  {confirm&&<div className="cf-notice mt-4"><p>Revoke this sandbox company’s authorization and remove the saved credentials from CareFlow?</p><button className="cf-secondary mt-3" disabled={busy} onClick={()=>void run(async()=>{await quickbooks('disconnect',homeId);setStatus({connected:false,ready:true,companyName:null,verifiedAt:null});setConfirm(false);})}>Disconnect sandbox company</button><button className="cf-secondary ml-3" disabled={busy} onClick={()=>setConfirm(false)}>Cancel</button></div>}
  </section>;
 }
-
