@@ -2,10 +2,10 @@ import type { Entry, Category } from './workspace';
 
 export const navigation: {group:string;items:readonly (readonly [string,string,string])[]}[] = [
   { group: 'Overview', items: [['Readiness center','Dashboard','grid'],['Weekly review','Weekly owner review','clock'],['Compliance tracker','Compliance & files','shield'],['Calendar','Calendar','calendar'],['Approvals','Approvals','check']] },
-  { group: 'Care', items: [['Residents','Residents & documents','people'],['Medication records','Medication documentation','pill'],['Incidents','Incidents & follow-up','warning']] },
+  { group: 'Care', items: [['Residents','Residents & documents','people'],['Document reader','OCR document reader','file'],['Medication records','Medication documentation','pill'],['Incidents','Incidents & follow-up','warning']] },
   { group: 'Compliance', items: [['Inspection binder','Compliance documents','file'],['Support Documents','Support Documents','folder'],['Corrective actions','Corrective actions','shield'],['House checklist','House checklist','check'],['Monthly reviews','Monthly reviews','clock'],['Reports','Reports','chart'],['Templates','Templates','printer']] },
   { group: 'People', items: [['Staff orientation','Staff readiness & training','people']] },
-  { group: 'Administration', items: [['Connected tools','Connected tools','grid'],['Homes','Homes','home'],['Settings','Access & settings','lock'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
+  { group: 'Administration', items: [['QuickBooks','Intuit QuickBooks','chart'],['Connected tools','Connected tools','grid'],['Homes','Homes','home'],['Settings','Access & settings','lock'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
   { group: 'AI workspace', items: [['Your team','AI manager','people']] },
 ] as const;
 export function sectionLabel(section: string) { return navigation.flatMap(g=>g.items).find(i=>i[0]===section)?.[1] || section; }
