@@ -320,3 +320,9 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 .calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:96px}
 @media(max-width:760px){.calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:calc(140px + env(safe-area-inset-top,0px))}}
 @media(max-width:760px){.calm-careflow .ct-shell.cf-shell .cf-topbar:not(:has(.ct-search)){height:calc(64px + env(safe-area-inset-top,0px));grid-template-rows:44px}.calm-careflow .ct-shell.cf-shell .cf-main:not(:has(.ct-search)){padding-top:calc(64px + env(safe-area-inset-top,0px))}}
+.calm-careflow .ct-shell.cf-shell .cf-discard-dialog{width:min(440px,calc(100% - 32px));max-width:none;border-radius:20px;padding:26px}
+.calm-careflow .ct-shell.cf-shell .cf-discard-dialog h2{font-size:22px;line-height:1.4}
+.calm-careflow .ct-shell.cf-shell .cf-discard-dialog>p{color:#526c60;line-height:1.8;font-size:14px;margin-top:13px}
+.calm-careflow .ct-shell.cf-shell .cf-discard-dialog .cf-dialog-actions{position:static;margin-bottom:0;bottom:auto;padding-bottom:0;margin-top:24px;justify-content:space-between;flex-wrap:wrap}
+.calm-careflow .ct-shell.cf-shell .cf-danger{background:#a33e50;color:white;border:1px solid #a33e50;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:600;min-height:44px}
+.calm-careflow .ct-shell.cf-shell .cf-danger:hover{background:#8d3243}
