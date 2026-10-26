@@ -16,7 +16,7 @@ for (const name of ['package.json', 'tsconfig.json', 'src/app/globals.css', 'src
   await cp(join(root, name), join(stage, name));
 }
 const layout = (await readFile(join(root, 'src/app/layout.tsx'), 'utf8'))
-  .replace('{children}</body>', '<aside style={{background:"#e8f0ea",color:"#234d3b",padding:"10px 20px",textAlign:"center",fontSize:14}}>CareFlow review demo · Fictional data only · Sample edits stay in this browser · Private test accounts use Supabase · AI assistants are prototypes</aside>{children}</body>');
+  .replace('{children}</body>', '<aside className="cf-preview-banner" style={{background:"#e8f0ea",color:"#234d3b",padding:"10px 20px",textAlign:"center",fontSize:14}}>CareFlow preview · Fictional data only</aside>{children}</body>');
 await writeFile(join(stage, 'src/app/layout.tsx'), layout);
 const page = await readFile(join(root, 'src/app/page.tsx'), 'utf8');
 await writeFile(join(stage, 'src/app/page.tsx'), page);

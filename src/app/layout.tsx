@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./careflow-vertex.css";
+import "@/components/careflow-calm.css";
 
 export const metadata: Metadata = {
   title: "CareFlow | Managed Readiness for Oregon RTH Operators",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="calm-careflow min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

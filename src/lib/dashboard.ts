@@ -8,7 +8,8 @@ export const navigation: {group:string;items:readonly (readonly [string,string,s
   { group: 'Administration', items: [['QuickBooks','Intuit QuickBooks','chart'],['Connected tools','Connected tools','grid'],['Homes','Homes','home'],['Settings','Access & settings','lock'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
   { group: 'AI workspace', items: [['Your team','AI manager','people']] },
 ] as const;
-export function sectionLabel(section: string) { return navigation.flatMap(g=>g.items).find(i=>i[0]===section)?.[1] || section; }
+const workspaceLabels:Record<string,string>={'Readiness center':'Today','Staff directory':'People','Shift coverage':'Schedule','Time approvals':'Time & approvals','Payroll preparation':'Payroll preparation','Document reader':'Document reader'};
+export function sectionLabel(section: string) { return workspaceLabels[section] || navigation.flatMap(g=>g.items).find(i=>i[0]===section)?.[1] || section; }
 export function viewEntries(entries: Entry[], homeId: string, section: string) {
   return entries.filter(e=>e.home_id===homeId).filter(e=>section==='Approvals'?e.status==='In review':section==='Calendar'?!!e.due_date && e.status!=='Complete':section==='House checklist'?e.category==='Inspection binder' && e.title.startsWith('House check · '):section==='Readiness center'?e.status!=='Complete':e.category===section).sort((a,b)=>(a.due_date||'9999').localeCompare(b.due_date||'9999')||a.title.localeCompare(b.title));
 }
