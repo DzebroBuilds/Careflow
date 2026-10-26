@@ -326,3 +326,18 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 .calm-careflow .ct-shell.cf-shell .cf-discard-dialog .cf-dialog-actions{position:static;margin-bottom:0;bottom:auto;padding-bottom:0;margin-top:24px;justify-content:space-between;flex-wrap:wrap}
 .calm-careflow .ct-shell.cf-shell .cf-danger{background:#a33e50;color:white;border:1px solid #a33e50;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:600;min-height:44px}
 .calm-careflow .ct-shell.cf-shell .cf-danger:hover{background:#8d3243}
+
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks{margin-bottom:24px}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks>p,.calm-careflow .ct-shell.cf-shell .cf-quickbooks>section>p{margin-top:14px;line-height:1.75;font-size:13px;color:#526c60;overflow-wrap:anywhere}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks>.cf-notice{margin-top:16px}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks>section{margin-top:26px;padding-top:22px;border-top:1px solid #e4ebe6}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks h3{font-weight:600;color:#294f41;font-size:15px}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks-table{margin-top:16px;overflow-x:auto;border:1px solid #e4ebe6;border-radius:12px}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks table{width:100%;min-width:340px;border-collapse:collapse;font-size:13px;text-align:left}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks :is(th,td){padding:13px 16px;line-height:1.6;border-bottom:1px solid #edf1ee;font-variant-numeric:tabular-nums}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks thead{background:#f7faf8;font-size:11px;color:#526c60}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks tbody th{font-weight:500;color:#355247}
+.calm-careflow .ct-shell.cf-shell .cf-quickbooks tbody tr:last-child :is(th,td){border-bottom:0}
+@media(max-width:440px){.calm-careflow .ct-shell.cf-shell .cf-quickbooks-actions>*{width:100%;text-align:center}.calm-careflow .ct-shell.cf-shell .cf-quickbooks table{min-width:280px}.calm-careflow .ct-shell.cf-shell .cf-quickbooks :is(th,td){padding:11px 9px}}
