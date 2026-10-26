@@ -291,4 +291,31 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 @media(max-width:760px){.calm-careflow .ct-shell.cf-shell .cf-demo,.calm-careflow .ct-shell.cf-shell .cf-demo a{font-size:10px}}
 @media(max-width:440px){.calm-careflow .ct-shell.cf-shell .ops-filter-bar button{font-size:11px;padding-inline:8px}.calm-careflow .ct-shell.cf-shell .ops-profile-drawer{width:calc(100% - 16px)}}
 .calm-careflow .cf-site :is(h1,h2,h3,h4),.calm-careflow .site-hero h1 em{font-family:var(--cf-font)}
-
+/* Skill audit: native navigation, clear feedback, long content, safe areas. */
+.calm-careflow .ct-shell.cf-shell .cf-nav .cf-nav-link{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:10px 12px;font-size:13px;line-height:1.4;white-space:normal;border-radius:10px;color:#4d6860;text-align:left;font-weight:500;background:transparent;text-decoration:none;flex-shrink:0}
+.calm-careflow .ct-shell.cf-shell .cf-nav .cf-nav-link.active{background:#dcebe1;color:#235d50;font-weight:650}
+.calm-careflow .ct-shell.cf-shell .cf-nav .cf-nav-link.active .cf-nav-icon{color:#287469}
+.calm-careflow .ct-shell.cf-shell .cf-nav .cf-nav-link:hover{background:#e2ece5;color:#235d50}
+.calm-careflow .ct-shell.cf-shell .ops-tabs .ops-tab{display:flex;align-items:center;background:transparent;border:0;border-radius:9px;color:#526c60;padding:10px 17px;min-height:44px;font-size:12px;font-weight:500;text-decoration:none;white-space:nowrap}
+.calm-careflow .ct-shell.cf-shell .ops-tabs .ops-tab:hover{background:#e1eae3}
+.calm-careflow .ct-shell.cf-shell .ops-tabs .ops-tab[aria-current=page]{background:white;color:#2c6553;box-shadow:0 2px 6px #2646340c;font-weight:600}
+.calm-careflow .ct-shell.cf-shell .cf-pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:18px;color:#526c60;font-size:12px;font-variant-numeric:tabular-nums}
+.calm-careflow .ct-shell.cf-shell .cf-pagination>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.calm-careflow .ct-shell.cf-shell .cf-pagination .cf-secondary{padding:9px 13px;min-height:44px;font-size:12px}
+.calm-careflow .ct-shell.cf-shell .cf-pagination p{line-height:1.7}
+.calm-careflow .ct-shell.cf-shell .ops-required{float:right;font-size:10px;font-weight:400;color:#526c60}
+.calm-careflow .ct-shell.cf-shell .ops-draft-status{font-size:12px;line-height:1.7;color:#526c60;margin:16px 0}
+.calm-careflow .ct-shell.cf-shell .ops-profile-drawer [role=alert] a{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.calm-careflow .ct-shell.cf-shell .cf-dialog{overscroll-behavior:contain;scroll-padding-top:24px;scroll-padding-bottom:110px}
+.calm-careflow .ct-shell.cf-shell .cf-dialog-header>div,.calm-careflow .ct-shell.cf-shell .ops-person>span:last-child{min-width:0}
+.calm-careflow .ct-shell.cf-shell :is(h1,h2,h3){text-wrap:balance;overflow-wrap:anywhere}
+.calm-careflow .ct-shell.cf-shell .ops-table :is(th,td){font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.calm-careflow .ct-shell.cf-shell :is(button,a,input,select,textarea,summary){scroll-margin-top:96px;scroll-margin-bottom:28px}
+.calm-careflow .ct-shell.cf-shell .cf-feature-loading{min-height:170px;color:#526c60}
+.calm-careflow .ct-shell.cf-shell .cf-feature-loading p{font-size:13px;margin-top:20px}
+.calm-careflow .ct-shell.cf-shell .cf-loading-line{height:14px;border-radius:7px;background:#edf2ee;max-width:420px;margin-top:9px}
+.calm-careflow .ct-shell.cf-shell .cf-loading-line.short{max-width:270px}
+@media(max-width:760px){.calm-careflow .ct-shell.cf-shell .cf-topbar{height:calc(116px + env(safe-area-inset-top,0px));padding-top:calc(10px + env(safe-area-inset-top,0px))}.calm-careflow .ct-shell.cf-shell .cf-main{padding-top:calc(116px + env(safe-area-inset-top,0px))}.calm-careflow .ct-shell.cf-shell .cf-sidebar{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.calm-careflow .ct-shell.cf-shell .cf-dialog-actions{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}.calm-careflow .ct-shell.cf-shell :is(button,a,input,select,textarea,summary){scroll-margin-top:calc(140px + env(safe-area-inset-top,0px))}.calm-careflow .ct-shell.cf-shell .ops-tabs .ops-tab{padding:9px 12px}}
+@media(max-width:440px){.calm-careflow .ct-shell.cf-shell .cf-pagination>div{width:100%;justify-content:space-between;gap:8px}}
+.calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:96px}
+@media(max-width:760px){.calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:calc(140px + env(safe-area-inset-top,0px))}}
