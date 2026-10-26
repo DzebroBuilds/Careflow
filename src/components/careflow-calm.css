@@ -290,3 +290,5 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 .calm-careflow .ct-shell.cf-shell .cf-demo a{font-size:11px;color:#426552}
 @media(max-width:760px){.calm-careflow .ct-shell.cf-shell .cf-demo,.calm-careflow .ct-shell.cf-shell .cf-demo a{font-size:10px}}
 @media(max-width:440px){.calm-careflow .ct-shell.cf-shell .ops-filter-bar button{font-size:11px;padding-inline:8px}.calm-careflow .ct-shell.cf-shell .ops-profile-drawer{width:calc(100% - 16px)}}
+.calm-careflow .cf-site :is(h1,h2,h3,h4),.calm-careflow .site-hero h1 em{font-family:var(--cf-font)}
+
