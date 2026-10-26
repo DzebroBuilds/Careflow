@@ -1,14 +1,18 @@
 'use client';
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import Link from 'next/link';
 import { intuitEnabled, quickbooks, startQuickbooks } from '@/lib/quickbooks';
 type Employee={id:string;name:string;active:boolean};
 type Status={connected:boolean;ready:boolean;companyName:string|null;verifiedAt:string|null;employees?:Employee[];employeesSyncedAt?:string|null};
-export default function QuickbooksConnection({demo,owner,homeId}:{demo:boolean;owner:boolean;homeId:string}) {
- const [status,setStatus]=useState<Status|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[confirm,setConfirm]=useState(false),[syncMessage,setSyncMessage]=useState('');
- async function run(action:()=>Promise<void>) {if(busy)return;setBusy(true);setError('');try{await action();}catch(e){setError(e instanceof Error?e.message:'Connection failed.');}finally{setBusy(false);}}
+type ConnectionProps={demo:boolean;owner:boolean;homeId:string};
+export default function QuickbooksConnection(props:ConnectionProps){return <QuickbooksPanel key={`${props.demo}:${props.owner}:${props.homeId}`} {...props}/>;}
+function QuickbooksPanel({demo,owner,homeId}:ConnectionProps) {
  const enabled=!demo&&owner&&!!homeId&&intuitEnabled;
- return <section className="cf-panel mb-6" aria-labelledby="quickbooks-heading"><div className="flex items-center justify-between gap-4"><div><p className="cf-eyebrow">Finance integration · Sandbox</p><h2 id="quickbooks-heading">Intuit QuickBooks</h2></div><span className="cf-badge">{status?.connected?'Company verified':'Not connected'}</span></div>
+ const [status,setStatus]=useState<Status|null>(null),[busy,setBusy]=useState(enabled),[error,setError]=useState(''),[confirm,setConfirm]=useState(false),[syncMessage,setSyncMessage]=useState('');
+ async function run(action:()=>Promise<void>) {if(busy)return;setBusy(true);setError('');try{await action();}catch(e){setError(e instanceof Error?e.message:'Connection failed.');}finally{setBusy(false);}}
+ useEffect(()=>{if(!enabled)return;let active=true;void quickbooks('status',homeId).then(result=>{if(active)setStatus(result);}).catch(cause=>{if(active)setError(cause instanceof Error?cause.message:'Connection check failed. Try again.');}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[enabled,homeId]);
+ const connectionLabel=error?'Connection check failed':status?(status.connected?'Company verified':'Not connected'):enabled?'Checking connection…':demo?'Private connection only':!owner?'Owner access required':'Setup required';
+ return <section className="cf-panel mb-6" aria-labelledby="quickbooks-heading"><div className="flex items-center justify-between gap-4"><div><p className="cf-eyebrow">Finance integration · Sandbox</p><h2 id="quickbooks-heading">Intuit QuickBooks</h2></div><span className="cf-badge" role="status" aria-live="polite">{connectionLabel}</span></div>
  <p className="mt-4 text-sm leading-6">Connect a QuickBooks test company and import its employee directory. This test reads names and active status only. It does not send records to QuickBooks or run payroll.</p>
  {demo?<p className="cf-notice mt-4">The sample workspace cannot connect to financial accounts. Use your private owner account for sandbox testing. <Link className="underline" href="/dashboard/quickbooks">Open private Intuit QuickBooks</Link></p>:!owner?<p className="cf-notice mt-4">The home owner manages this connection.</p>:!intuitEnabled?<p className="cf-notice mt-4">Awaiting Intuit developer app setup.</p>:null}
  {status&&<p className="mt-4 text-sm" role="status">{status.connected?`${status.companyName} · Sandbox company verified${status.verifiedAt?' on '+new Date(status.verifiedAt).toLocaleString():''}.`:status.ready?'Ready to connect your sandbox company.':'Server credentials still need setup.'}</p>}
