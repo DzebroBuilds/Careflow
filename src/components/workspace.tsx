@@ -1,18 +1,12 @@
 'use client';
 import Link from 'next/link';
 import HomeAccess from './home-access';
-import OperationsDemo, { operationSections } from './operations-demo';
+import dynamic from 'next/dynamic';
+import { operationSections } from '@/lib/operation-sections';
+import { sectionFromSearch,sectionHref,isPlainNavigation,beforeNavigationEvent } from '@/lib/workspace-navigation';
 import { operationsKey } from '@/lib/demo-operations';
-import QuickbooksConnection from './quickbooks-connection';
 import DocumentReaderHub from './document-reader-hub';
-import ResidentWorkspace from './resident-workspace';
-import ResidentDocumentEditor from './resident-document-editor';
 import { normalizeResidentWorkspace, residentDocumentDraft, monthlyDocumentGaps, monthlyTypes, monthEnd, validateResidentDocument, type Resident, type DocumentType } from '@/lib/residents';
-import ConnectedTools from './connected-tools';
-import TeamLab from './team-lab';
-import ManagerChat from './manager-chat';
-import DashboardViews from './dashboard-views';
-import ComplianceTracker from './compliance-tracker';
 import DashboardOverview from './dashboard-overview';
 import './dashboard-theme.css';
 import TodayAttention from './today-attention';
@@ -28,6 +22,18 @@ import { categories, sampleWorkspace, isOverdue, localDate, reviewCsv, type Work
 
 import { parseDemoWorkspace } from '@/lib/demo-storage';
 import { rememberedUntil } from '@/lib/auth-storage';
+
+
+function FeatureLoading(){return <section className="cf-panel cf-feature-loading" role="status" aria-live="polite"><div className="cf-loading-line"/><div className="cf-loading-line short"/><p>Loading workspace tools…</p></section>;}
+const OperationsDemo=dynamic(()=>import('./operations-demo'),{loading:FeatureLoading});
+const QuickbooksConnection=dynamic(()=>import('./quickbooks-connection'),{loading:FeatureLoading});
+const ResidentWorkspace=dynamic(()=>import('./resident-workspace'),{loading:FeatureLoading});
+const ResidentDocumentEditor=dynamic(()=>import('./resident-document-editor'),{loading:FeatureLoading});
+const ConnectedTools=dynamic(()=>import('./connected-tools'),{loading:FeatureLoading});
+const TeamLab=dynamic(()=>import('./team-lab'),{loading:FeatureLoading});
+const ManagerChat=dynamic(()=>import('./manager-chat'),{loading:FeatureLoading});
+const ComplianceTracker=dynamic(()=>import('./compliance-tracker'),{loading:FeatureLoading});
+const DashboardViews=dynamic(()=>import('./dashboard-views'),{loading:FeatureLoading});
 
 const blank: Data = {homes:[],entries:[],activity:[],residents:[]};
 const demoKey = 'careflow-demo-v1';
@@ -54,6 +60,7 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
   const [homeModal,setHomeModal] = useState(false);
   const [file,setFile] = useState<File|null>(null);
   const [storageReady,setStorageReady] = useState(true);
+  const currentHref=useRef('');
   const searchRef = useRef<HTMLInputElement>(null);
   const entryDialog = useRef<HTMLDialogElement>(null);
   const homeDialog = useRef<HTMLDialogElement>(null);
@@ -85,6 +92,8 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
     let active = true;
     async function initialize() {
       try {
+        setSection(sectionFromSearch(window.location.search,initialSection));
+        currentHref.current=window.location.pathname+window.location.search+window.location.hash;
         if (demo) {
           let next = sampleWorkspace();
           try { const stored = localStorage.getItem(demoKey); if(stored) { next=parseDemoWorkspace(stored); } } catch { setNotice('Sample storage could not be read. A fresh sample workspace is loaded.'); }
@@ -97,7 +106,7 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
     return ()=>{active=false;};
   // The workspace initializes once for this route. Reloads are explicit after writes.
 
-  },[demo,loadCloud]);
+  },[demo,loadCloud,initialSection]);
   useEffect(()=>{ if(editing) entryDialog.current?.showModal(); else entryDialog.current?.close(); },[editing]);
   useEffect(()=>{ if(homeModal) homeDialog.current?.showModal(); else homeDialog.current?.close(); },[homeModal]);
   useEffect(() => {
@@ -132,9 +141,14 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
   const panelOnly = ['QuickBooks','Document reader','Connected tools','Reports','Templates','Homes','Help','Support Documents','Compliance tracker','Weekly review','Residents'].includes(section)||operationSections.includes(section);
   const menuGroups=(demo||data.homes.some(home=>home.owner_id===userId))?[...navigation,{group:'Operations',items:[['Staff directory','Staff directory','people'],['Shift coverage','Shift coverage','calendar'],['Time approvals','Time approvals','clock'],['Expenses','Expenses','folder'],['Payroll preparation','Payroll preparation','chart']] as const}]:navigation;
   useEffect(()=>{if(!menuOpen)return;document.querySelector<HTMLButtonElement>('.cf-sidebar .cf-nav-close')?.focus();const close=(event:KeyboardEvent)=>{if(event.key==='Escape'){setMenuOpen(false);document.querySelector<HTMLButtonElement>('.ct-brand button')?.focus();}if(event.key==='Tab'&&window.innerWidth<=1024){const items=[...document.querySelectorAll<HTMLElement>('.cf-sidebar a[href],.cf-sidebar button:not(:disabled),.cf-sidebar summary')].filter(item=>item.getBoundingClientRect().height>0);const first=items[0],last=items[items.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[menuOpen]);
+  const searchable=['Staff directory','Time approvals'].includes(section)||(!isOverview&&!panelOnly&&!['Your team','Settings','Activity history'].includes(section));
   const primaryNav=[['Readiness center','Today','grid'],['Staff directory','People','people'],['Shift coverage','Schedule','calendar'],['Time approvals','Time','clock'],['Payroll preparation','Payroll','chart'],['Expenses','Expenses','folder'],['Residents','Residents','people'],['Document reader','OCR reader','file'],['QuickBooks','QuickBooks','chart']].filter(([id])=>menuGroups.some(group=>group.items.some(item=>item[0]===id)));
   const moreNav=menuGroups.map(group=>({...group,items:group.items.filter(item=>!primaryNav.some(([id])=>id===item[0]))})).filter(group=>group.items.length);
-  function goTo(next:string) { setSection(next);setSearch('');setFilter('All');setMenuOpen(false);requestAnimationFrame(()=>document.getElementById('workspace-content')?.focus({preventScroll:true})); }
+  useEffect(()=>{const restore=()=>{const nextSection=sectionFromSearch(window.location.search,initialSection);const previousSection=sectionFromSearch(new URL(currentHref.current||window.location.href,window.location.origin).search,initialSection);if(nextSection===previousSection){currentHref.current=window.location.pathname+window.location.search+window.location.hash;return;}if(!window.dispatchEvent(new Event(beforeNavigationEvent,{cancelable:true}))){window.history.pushState(window.history.state,'',currentHref.current);return;}currentHref.current=window.location.pathname+window.location.search+window.location.hash;setSection(sectionFromSearch(window.location.search,initialSection));setSearch('');setFilter('All');setMenuOpen(false);requestAnimationFrame(()=>document.getElementById('workspace-content')?.focus({preventScroll:true}));};window.addEventListener('popstate',restore);return()=>window.removeEventListener('popstate',restore);},[initialSection]);
+  function hrefForSection(next:string){return sectionHref(typeof window==='undefined'?(demo?'/demo/':'/dashboard/'):window.location.pathname,typeof window==='undefined'?'':window.location.search,next);}
+  function goTo(next:string) {if(!window.dispatchEvent(new Event(beforeNavigationEvent,{cancelable:true})))return;const href=hrefForSection(next);if(href!==window.location.pathname+window.location.search)window.history.pushState(window.history.state,'',href);currentHref.current=href;setSection(next);setSearch('');setFilter('All');setMenuOpen(false);requestAnimationFrame(()=>document.getElementById('workspace-content')?.focus({preventScroll:true}));}
+  function navigate(event:React.MouseEvent<HTMLAnchorElement>,next:string){if(isPlainNavigation(event)){event.preventDefault();goTo(next);}}
+
   function useTemplate(t:RecordTemplate) { setError('');setFile(null);setEditing({id:'',home_id:homeId,category:t.category,title:t.title,subject:'',assignee:'',due_date:localDate(),priority:'Normal',status:'Open',notes:t.notes,evidence_path:null,evidence_name:null,updated_at:''}); }
 
   function commit(next: Data) { try { localStorage.setItem(demoKey,JSON.stringify(next));setData(next);setStorageReady(true); } catch {setStorageReady(false);throw new Error('Your browser could not save this change. Free storage or enable site storage, then retry.');} }
@@ -220,8 +234,8 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
     <aside className="cf-sidebar" aria-label="CareFlow sidebar"><button className="cf-nav-close" aria-label="Close navigation menu" onClick={()=>{setMenuOpen(false);document.querySelector<HTMLButtonElement>('.ct-brand button')?.focus();}}>×</button>
       <Link href="/" className="cf-brand"><span className="cf-logo"><Icon name="cross" size={20}/></span><span>CareFlow<small>Your care workspace</small></span></Link>
       <nav id="workspace-nav" aria-label="Workspace navigation" className={`cf-nav ${menuOpen?'is-open':''}`}>
-        <div className="cf-nav-group"><p>Workspace</p>{primaryNav.map(([id,label,icon])=><button key={id} title={label} aria-label={label} aria-current={section===id?'page':undefined} onClick={()=>goTo(id)} className={section===id?'active':''}><span className="cf-nav-icon"><Icon name={icon} size={19}/></span>{label}</button>)}</div>
-        <details className="cf-nav-more" key={moreNav.some(group=>group.items.some(item=>item[0]===section))?'active-tool':'other-tool'} open={moreNav.some(group=>group.items.some(item=>item[0]===section))}><summary>More tools<Icon name="chevron" size={16}/></summary>{moreNav.map(group=><div className="cf-nav-group" key={group.group}><p>{group.group}</p>{group.items.map(([id,label,icon])=><button key={id} aria-label={label} aria-current={section===id?'page':undefined} onClick={()=>goTo(id)} className={section===id?'active':''}><span className="cf-nav-icon"><Icon name={icon} size={18}/></span>{label}</button>)}</div>)}</details>
+        <div className="cf-nav-group"><p>Workspace</p>{primaryNav.map(([id,label,icon])=><Link key={id} prefetch={false} href={hrefForSection(id)} title={label} aria-label={label} aria-current={section===id?'page':undefined} onClick={event=>navigate(event,id)} className={`cf-nav-link ${section===id?'active':''}`}><span className="cf-nav-icon"><Icon name={icon} size={19}/></span>{label}</Link>)}</div>
+        <details className="cf-nav-more" key={moreNav.some(group=>group.items.some(item=>item[0]===section))?'active-tool':'other-tool'} open={moreNav.some(group=>group.items.some(item=>item[0]===section))}><summary>More tools<Icon name="chevron" size={16}/></summary>{moreNav.map(group=><div className="cf-nav-group" key={group.group}><p>{group.group}</p>{group.items.map(([id,label,icon])=><Link key={id} prefetch={false} href={hrefForSection(id)} aria-label={label} aria-current={section===id?'page':undefined} onClick={event=>navigate(event,id)} className={`cf-nav-link ${section===id?'active':''}`}><span className="cf-nav-icon"><Icon name={icon} size={18}/></span>{label}</Link>)}</div>)}</details>
       </nav>
       <div className="cf-sidebar-footer"><button className="cf-sidebar-action" onClick={()=>setHomeModal(true)}><Icon name="home" size={17}/>Add a home</button><button className="cf-sidebar-action" onClick={()=>goTo('Settings')}><Icon name="lock" size={17}/>Settings & access</button>{demo?<Link className="cf-sidebar-action" href="/demo/start">Demo guide ↗</Link>:<button className="cf-sidebar-action" onClick={async()=>{await supabase!.auth.signOut();router.push('/login');}}>Sign out</button>}</div>
     </aside>
@@ -229,7 +243,7 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
       <header className="cf-topbar">
         <div className="ct-brand"><button className="ct-icon-button" aria-label="Toggle navigation" aria-expanded={menuOpen} aria-controls="workspace-nav" onClick={()=>setMenuOpen(!menuOpen)}><Icon name="menu"/></button><strong>CareFlow</strong></div>
         <label className="ct-location"><Icon name="home" size={17}/><span className="sr-only">Current location</span><select value={homeId} onChange={e=>{setMetricsScope('house');setHomeId(e.target.value);setSearch('');setFilter('All');}}>{!data.homes.length&&<option value="">No homes</option>}{data.homes.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}</select></label>
-        <label className="ct-search"><Icon name="search" size={18}/><span className="sr-only">Search residents, staff, and medication records</span><input placeholder="Search residents, staff, meds..." value={search} onChange={e=>setSearch(e.target.value)}/></label>
+        {searchable&&<label className="ct-search"><Icon name="search" size={18}/><span className="sr-only">Search this view</span><input type="search" name="workspaceSearch" autoComplete="off" spellCheck={false} placeholder={section==='Staff directory'?'Search people or employee codes…':section==='Time approvals'?'Search employee names or dates…':'Search records…'} value={search} onChange={e=>setSearch(e.target.value)}/></label>}
         <div className="ct-tools"><button className="ct-icon-button ct-help" aria-label="Help" onClick={()=>goTo('Help')}><Icon name="help"/></button><button className="ct-icon-button" aria-label={`${overdue.length} overdue notifications`} onClick={()=>{goTo('Calendar');setFilter('Overdue');}}><Icon name="bell"/>{overdue.length>0&&<span className="ct-badge">{overdue.length}</span>}</button><button className="cf-avatar" aria-label="Profile and settings" onClick={()=>goTo('Settings')}>{demo?'D':'C'}</button></div>
       </header>
       {!demo&&sampleDataOnly&&<div className="cf-demo"><span><strong>Private test workspace</strong><span className="cf-demo-separator">·</span> Fictional information only.</span><Link href="/setup">Production setup →</Link></div>}{demo&&<div className="cf-demo"><span><strong>Interactive demo</strong><span className="cf-demo-separator">·</span> Sample changes stay in this browser.</span><Link href="/demo/start">Demo guide →</Link></div>}
