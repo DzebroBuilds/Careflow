@@ -268,3 +268,6 @@ button:disabled { cursor:not-allowed; }
 @media print{.site-header{position:static}.site-header,.site-product,.product-floating,.cf-dialog,.cf-topbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}}
 
 .cf-remember{display:flex!important;align-items:center;gap:10px;font-size:14px!important;line-height:1.6}.cf-remember input{width:18px!important;height:18px;flex:0 0 18px;accent-color:#294a37}
+
+/* Keep accessible labels available even when utility extraction omits this class. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
