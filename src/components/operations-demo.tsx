@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ListPagination from './list-pagination';
 import { operationSections } from '@/lib/operation-sections';
 import { pageSlice,snapshotFields,profileErrorField } from '@/lib/interface-state';
-import { beforeNavigationEvent,sectionHref,isPlainNavigation } from '@/lib/workspace-navigation';
+import { beforeNavigationEvent,sectionLinkHref,isPlainNavigation } from '@/lib/workspace-navigation';
 import { loadOperations,persistOperations } from '@/lib/operations-cloud';
 import { fortyPeople,payrollPreview,payrollTestCsv } from '@/lib/operations-fixture';
 import { useEffect,useMemo,useRef,useState } from 'react';
@@ -45,7 +45,7 @@ export default function OperationsDemo({demo,ownerId='',homes:providedHomes,home
  const staffPage=staff.slice((page.page-1)*25,page.page*25),timePage=filteredTime.slice((page.page-1)*25,page.page*25);
  const errorField=profileErrorField(error);
  function pageControls(label:string){return <ListPagination {...page} label={label} onPage={next=>{setListPage({key:pageKey,page:next});requestAnimationFrame(()=>{const list=document.getElementById('operations-list');list?.focus({preventScroll:true});list?.scrollIntoView({block:'start',behavior:'auto'});});}}/>;}
- function operationHref(target:string){return sectionHref(window.location.pathname,window.location.search,target);}
+ function operationHref(target:string){return sectionLinkHref(window.location.pathname,window.location.search,target,process.env.NEXT_PUBLIC_CAREFLOW_BASE_PATH||'');}
  function operationNavigate(event:React.MouseEvent<HTMLAnchorElement>,target:string){if(isPlainNavigation(event)){event.preventDefault();onGo(target);}}
  const approved=time.filter(entry=>entry.status==='Approved'),approvedMinutes=approved.reduce((sum,entry)=>sum+entry.minutes,0);
  async function commit(next:Operations,message:string){if(savingRef.current)return false;savingRef.current=true;setSaving(true);try{parseOperations(JSON.stringify(next),homes);if(demo)localStorage.setItem(operationsKey,JSON.stringify(next));else{const saved=await persistOperations(ownerId,revision,next,homes);setRevision(saved.revision);setSavedAt(saved.updatedAt);}setData(next);setNotice(message);setError('');return true;}catch(e){setError(e instanceof Error?e.message:'The change could not be saved.');return false;}finally{savingRef.current=false;setSaving(false);}}
