@@ -319,3 +319,4 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 @media(max-width:440px){.calm-careflow .ct-shell.cf-shell .cf-pagination>div{width:100%;justify-content:space-between;gap:8px}}
 .calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:96px}
 @media(max-width:760px){.calm-careflow .ct-shell.cf-shell #operations-list{scroll-margin-top:calc(140px + env(safe-area-inset-top,0px))}}
+@media(max-width:760px){.calm-careflow .ct-shell.cf-shell .cf-topbar:not(:has(.ct-search)){height:calc(64px + env(safe-area-inset-top,0px));grid-template-rows:44px}.calm-careflow .ct-shell.cf-shell .cf-main:not(:has(.ct-search)){padding-top:calc(64px + env(safe-area-inset-top,0px))}}
