@@ -8,7 +8,7 @@
     "start": "next start",
     "check:production": "node scripts/check-production.mjs",
     "lint": "eslint",
-    "test": "node --test tests/workspace.test.mjs tests/quickbooks.test.mjs tests/production-config.test.mjs tests/demo-operations.test.mjs && node tests/database.mjs"
+    "test": "node --test tests/workspace.test.mjs tests/quickbooks.test.mjs tests/production-config.test.mjs tests/demo-operations.test.mjs tests/operations-fixture.test.mjs && node tests/database.mjs && node tests/operations-database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",
