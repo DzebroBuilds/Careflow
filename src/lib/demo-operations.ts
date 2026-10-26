@@ -1,7 +1,7 @@
 import type { Home } from './workspace.ts';
 import { csvCell, localDate } from './workspace.ts';
 export const operationsKey='careflow-demo-operations-v1';
-export type Staff={id:string;name:string;job:string;status:'Active'|'Onboarding'|'Inactive';homeIds:string[]};
+export type Staff={id:string;name:string;job:string;status:'Active'|'Onboarding'|'Inactive';homeIds:string[];hourlyCents?:number;email?:string;employeeCode?:string};
 export type Shift={id:string;homeId:string;staffId:string|null;date:string;start:string;end:string};
 export type TimeEntry={id:string;homeId:string;staffId:string;date:string;minutes:number;status:'Submitted'|'Approved'};
 export type Expense={id:string;homeId:string;vendor:string;description:string;cents:number;status:'Submitted'|'Approved'};
@@ -16,6 +16,9 @@ function eligible(staff:Staff|undefined,homeId:string){return !!staff&&staff.sta
 export function hasCoverage(data:Operations,shift:Shift){return eligible(data.staff.find(staff=>staff.id===shift.staffId),shift.homeId);}
 export function saveStaff(data:Operations,profile:Staff,homes:Home[]) {
  const allowed=new Set(homes.map(home=>home.id));
+ if(profile.hourlyCents!==undefined&&(!Number.isInteger(profile.hourlyCents)||profile.hourlyCents<1||profile.hourlyCents>100000))throw new Error('Hourly rate must be between $0.01 and $1,000.');
+ if(profile.email!==undefined&&profile.email!==''&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email))throw new Error('Enter a valid email.');
+ if(profile.employeeCode!==undefined&&(!text(profile.employeeCode,40)||data.staff.some(person=>person.id!==profile.id&&person.employeeCode===profile.employeeCode)))throw new Error('Employee code must be unique.');
  if(!id(profile.id)||!text(profile.name,120)||!text(profile.job,80)||!['Active','Onboarding','Inactive'].includes(profile.status)||!Array.isArray(profile.homeIds)||profile.homeIds.some(homeId=>!allowed.has(homeId))||new Set(profile.homeIds).size!==profile.homeIds.length)throw new Error('Enter a name, job title, valid status and available homes.');
  return {...data,staff:[{...profile,name:profile.name.trim(),job:profile.job.trim()},...data.staff.filter(staff=>staff.id!==profile.id)]};
 }
@@ -49,6 +52,7 @@ export function parseOperations(raw:string,homes:Home[]):Operations {
  if(!data||data.version!==1||!['staff','shifts','time','expenses'].every(key=>Array.isArray(data[key as keyof Operations])&&(data[key as keyof Operations] as unknown[]).length<=5000))throw new Error('Invalid sample operations.');
  for(const rows of [data.staff,data.shifts,data.time,data.expenses])if(rows.some(row=>!row||!id(row.id))||new Set(rows.map(row=>row.id)).size!==rows.length)throw new Error('Invalid or duplicate sample IDs.');
  for(const staff of data.staff)saveStaff({version:1,staff:[],shifts:[],time:[],expenses:[]},staff,homes);
+ const codes=data.staff.map(staff=>staff.employeeCode).filter(Boolean);if(new Set(codes).size!==codes.length)throw new Error('Duplicate employee codes.');
  const staffIds=new Set(data.staff.map(staff=>staff.id));
  for(const shift of data.shifts){if(!homeIds.has(shift.homeId)||shift.staffId!==null&&!staffIds.has(shift.staffId)||!validDate(shift.date))throw new Error('Invalid shift references.');shiftMinutes(shift);}
  for(const entry of data.time)if(!homeIds.has(entry.homeId)||!staffIds.has(entry.staffId)||!validDate(entry.date)||!Number.isInteger(entry.minutes)||entry.minutes<1||entry.minutes>1440||!['Submitted','Approved'].includes(entry.status))throw new Error('Invalid time entry.');
