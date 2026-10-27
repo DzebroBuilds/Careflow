@@ -5,12 +5,12 @@
 .site-wallpaper-light{position:absolute;inset:0;background:radial-gradient(ellipse at 78% 8%,#fff4ce66,transparent 55%);animation:careflow-daylight 18s ease-in-out infinite alternate}
 .site-wallpaper-veil{position:absolute;inset:0;background:linear-gradient(90deg,#f4f8f1f5 0%,#f4f8f1e8 27%,#f4f8f170 55%,#f4f8f10d 100%)}
 .site-hero-backdrop .site-hero{position:relative;z-index:1}
-.site-wallpaper-control{position:absolute;z-index:2;bottom:24px;right:max(24px,calc((100vw - 1260px)/2));display:flex;align-items:center;gap:8px;border:1px solid #bdcebf;background:#f8fbf4ed;color:#294f41;border-radius:999px;padding:10px 15px;min-height:44px;font-size:12px;line-height:1.4;box-shadow:0 2px 10px #294f4108}
+.site-wallpaper-control{position:absolute;z-index:2;top:20px;right:max(24px,calc((100vw - 1260px)/2));display:flex;align-items:center;gap:8px;border:1px solid #bdcebf;background:#f8fbf4ed;color:#294f41;border-radius:999px;padding:10px 15px;min-height:44px;font-size:12px;line-height:1.4;box-shadow:0 2px 10px #294f4108}
 .site-wallpaper-control:hover{background:#fff}.site-wallpaper-control:focus-visible{outline:3px solid #287c80;outline-offset:4px}.site-wallpaper-control:disabled{cursor:default;opacity:1;color:#526c60}
 .site-wallpaper[data-paused=true]>*{animation-play-state:paused!important}
 @keyframes careflow-scenery-drift{from{transform:scale(1) translate3d(0,0,0)}to{transform:scale(1.035) translate3d(-.6%,.3%,0)}}
 @keyframes careflow-mist-drift{from{transform:translate3d(-2%,1%,0);opacity:.4}to{transform:translate3d(3%,-1%,0);opacity:.8}}
 @keyframes careflow-daylight{from{opacity:.35}to{opacity:.7}}
-@media(max-width:800px){.site-wallpaper-image{background-position:67% top;background-size:auto 800px;background-repeat:no-repeat}.site-wallpaper-veil{background:linear-gradient(180deg,#f4f8f1d9,#f4f8f1db 520px,#f2f7f3 850px)}.site-wallpaper-control{right:22px;bottom:22px}.site-wallpaper-mist{inset:0 0 25%}}
+@media(max-width:800px){.site-wallpaper-image{background-position:67% top;background-size:auto 800px;background-repeat:no-repeat}.site-wallpaper-veil{background:linear-gradient(180deg,#f4f8f1d9,#f4f8f1db 520px,#f2f7f3 850px)}.site-wallpaper-control{right:22px;top:16px}.site-hero-backdrop .site-hero{padding-top:90px}.site-wallpaper-mist{inset:0 0 25%}}
 @media(prefers-reduced-motion:reduce){.site-wallpaper>*{animation:none!important;transform:none!important}}
 @media print{.site-wallpaper,.site-wallpaper-control{display:none}}
