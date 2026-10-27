@@ -261,8 +261,8 @@ body:has(.ct-shell)>.cf-preview-banner{display:none}
 .calm-careflow .cf-site{background:#f8faf8;color:#253746;font-family:var(--cf-font)}
 .calm-careflow .site-header{background:#ffffffed;border-color:#e2eae4;backdrop-filter:blur(14px)}
 .calm-careflow .site-brand-dot{color:#568e79}
-.calm-careflow .site-hero-backdrop{background:#f2f7f3!important;background-image:none!important}
-.calm-careflow .site-hero-backdrop:before{background:linear-gradient(115deg,#f6f9f6,#edf5ef)}
+.calm-careflow .site-hero-backdrop{background-color:#f2f7f3}
+.calm-careflow .site-hero-backdrop:before{display:none}
 .calm-careflow .site-hero h1{color:#2a463b;font-family:var(--cf-font);font-weight:600;letter-spacing:-2.3px}
 .calm-careflow .site-hero h1 em{color:#5e8a71;font-style:normal}
 .calm-careflow .site-hero .site-lead,.calm-careflow .site-hero-note{color:#5c7667}
