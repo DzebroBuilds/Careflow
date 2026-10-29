@@ -1,6 +1,7 @@
-// Public web-app identifiers only. Never put a client secret or access token here.
+// Public browser configuration. Restrict the Picker key by HTTPS referrer and API.
+// NEXT_PUBLIC values are visible in the built client; never use a server secret here.
 export const googleConfig = {
-  clientId: '1085884048869-b8gs9b59ma7f0m93au4pg96it2tnlum6.apps.googleusercontent.com',
-  pickerApiKey: 'AIzaSyAzGe8K0GRRoJUA64H_aqkwOR-wNUwHd1k',
-  projectNumber: '1085884048869',
+  clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+  pickerApiKey: process.env.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY || '',
+  projectNumber: process.env.NEXT_PUBLIC_GOOGLE_PROJECT_NUMBER || '',
 };
