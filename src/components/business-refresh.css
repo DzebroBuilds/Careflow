@@ -1,0 +1,114 @@
+/* Landing page only: presentation is isolated from application workflows. */
+.calm-careflow .cf-site.cf-marketing{--ink:#28163f;--muted:#706777;background:#fffcf9;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.cf-site.cf-marketing .site-container{max-width:1200px;padding-inline:42px}
+.cf-site.cf-marketing .site-header{position:absolute;inset:44px 0 auto;z-index:5;background:transparent;border:0;backdrop-filter:none;padding-inline:30px}
+.cf-site.cf-marketing .site-nav{min-height:76px;max-width:1050px;padding:12px 18px 12px 26px;border:1px solid #ffffffb0;border-radius:999px;background:#ffffffed;gap:24px}
+.cf-site.cf-marketing .cf-brand{color:var(--ink);font-size:26px;font-weight:600;letter-spacing:-1.2px;gap:9px}
+.cf-site.cf-marketing .cf-logo{background:var(--ink);color:white;width:32px;height:32px;border-radius:11px}
+.cf-site.cf-marketing .site-brand-dot{display:none}
+.cf-site.cf-marketing .site-nav nav{font-size:13px;gap:30px;color:#51475b}
+.cf-site.cf-marketing .site-nav>.cf-secondary{background:var(--ink);color:white;border:0;padding:15px 25px;min-height:46px}
+.cf-site.cf-marketing .site-nav a:hover{color:#8d557c}
+.cf-site.cf-marketing .site-nav>.cf-secondary:hover{background:#493057;color:white}
+.cf-site.cf-marketing .site-hero-backdrop{background:radial-gradient(ellipse at 10% 69%,#f8c6a6a6,transparent 50%),radial-gradient(ellipse at 93% 58%,#eac8eeb3,transparent 55%),linear-gradient(160deg,#fcf2e9,#fff7f4 45%,#f9e5ed 75%,#f4eaf7);position:relative;overflow:hidden}
+.cf-site.cf-marketing .site-hero-backdrop:before{display:none}
+.cf-site.cf-marketing .site-hero{display:flex;flex-direction:column;gap:0;padding-top:205px;padding-bottom:88px;position:relative;z-index:1}
+.cf-site.cf-marketing .site-hero-copy{max-width:1000px;text-align:center;width:100%}
+.cf-site.cf-marketing .site-kicker{justify-content:center;letter-spacing:1.5px;font-size:10px;color:#74566b;gap:10px}
+.cf-site.cf-marketing .site-kicker>span{background:#af798e;width:5px;height:5px}
+.calm-careflow .cf-site.cf-marketing .site-hero h1,.calm-careflow .cf-site.cf-marketing .site-hero h1 em{font-family:Georgia,'Times New Roman',serif;font-weight:400;color:var(--ink);font-style:normal;font-size:clamp(56px,6.8vw,94px);line-height:1.08;letter-spacing:-4px}
+.cf-site.cf-marketing .site-hero h1{margin-top:28px}
+.calm-careflow .cf-site.cf-marketing .site-hero h1 em{color:#654273}
+.cf-site.cf-marketing .site-hero .site-lead{max-width:620px;margin:25px auto 0;font-size:16px;line-height:1.8;color:#64556b}
+.cf-site.cf-marketing .site-actions{justify-content:center;gap:16px;margin-top:30px}
+.cf-site.cf-marketing .cf-primary{background:var(--ink);color:white;border-radius:999px;box-shadow:none;border:1px solid transparent;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:15px 25px;font-size:13px}
+.cf-site.cf-marketing .cf-primary:hover{background:#493057;transform:translateY(-2px)}
+.cf-site.cf-marketing .site-actions .site-text-link{background:#ffffffd9;color:var(--ink);padding:15px 25px;border-radius:999px;font-size:13px;border:1px solid #ffffffb0;min-height:48px}
+.cf-site.cf-marketing .site-hero-note{justify-content:center;gap:12px;color:#816c80;font-size:10px;margin-top:23px;flex-wrap:wrap}
+.marketing-orbit{position:absolute;width:1500px;height:680px;left:50%;top:610px;transform:translateX(-50%) rotate(-9deg);border:1px solid #ffffffa8;border-radius:50%;pointer-events:none;box-shadow:0 0 0 60px #ffffff22,0 0 0 120px #ffffff18}
+.marketing-product-stage{width:100%;max-width:800px;margin:65px auto 0;position:relative;text-align:left}
+.cf-site.cf-marketing .site-product{width:100%;transform:none;animation:none;border:8px solid #ffffff80;border-radius:22px;background:white;box-shadow:0 30px 90px -35px #58335955;backdrop-filter:none}
+.cf-site.cf-marketing .site-product:before{display:none}
+.cf-site.cf-marketing .product-top{background:#fffaf8;border-color:#f0e9ec;color:#8b7588;padding:15px 22px;font-size:10px;border-radius:15px 15px 0 0}
+.cf-site.cf-marketing .walkthrough-tabs{background:white;border-color:#eee5eb;padding:8px 20px 0}
+.cf-site.cf-marketing .walkthrough-tabs button{font-size:12px;color:#7d6b82;min-height:47px;border-radius:10px 10px 0 0}
+.cf-site.cf-marketing .walkthrough-tabs button[aria-selected=true]{background:#f5edf7;color:#654273}
+.cf-site.cf-marketing .walkthrough-tabs button[aria-selected=true]:after{background:#a37da9}
+.cf-site.cf-marketing .walkthrough-panel{padding:28px 35px;min-height:390px}
+.calm-careflow .cf-site.cf-marketing .walkthrough-heading h2{font-family:Arial,Helvetica,sans-serif;font-size:24px;letter-spacing:-.8px;color:#38263d}
+.cf-site.cf-marketing .walkthrough-record{background:#fffdfb;border-color:#eee4e9;border-radius:14px;margin-top:24px;padding:22px}
+.cf-site.cf-marketing .walkthrough-record h3{font-size:16px;color:#3a2843}
+.cf-site.cf-marketing .walkthrough-fields dd{font-size:12px}
+.cf-site.cf-marketing .walkthrough-note{font-size:11px}
+.cf-site.cf-marketing .walkthrough-footer{padding:17px 30px;background:#fffaf8;border-color:#eee4e9}
+.cf-site.cf-marketing .product-caption{position:static;text-align:center;background:white;padding:0 12px 16px;font-size:10px;color:#8b7588}
+.marketing-float{position:absolute;z-index:2;display:flex;align-items:center;gap:12px;padding:18px;background:#fffefc;border:1px solid #ffffffc9;border-radius:15px;box-shadow:0 12px 40px #4c2d4512;pointer-events:none}
+.marketing-float-left{left:-125px;top:150px;transform:rotate(-5deg)}
+.marketing-float-right{right:-120px;bottom:62px;transform:rotate(5deg)}
+.marketing-float strong{display:block;font-size:12px;font-weight:600;color:#392a42}
+.marketing-float div>span{font-size:10px;color:#8b7588;display:block;margin-top:5px}
+.marketing-float-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#f2eaf5;color:#85578e}
+.marketing-float-right .marketing-float-icon{background:#e9f0e7;color:#5c7b59}
+.cf-site.cf-marketing .site-promise{background:#fffcf9;border-color:#eee5e7}
+.cf-site.cf-marketing .site-promise>div{min-height:94px}
+.cf-site.cf-marketing .site-promise span{color:#8b7588;font-size:11px}
+.cf-site.cf-marketing .site-promise p{color:#5f486c;font-size:12px}
+.cf-site.cf-marketing .site-section{padding-block:100px}
+.cf-site.cf-marketing .site-section-heading{gap:60px;margin-bottom:45px}
+.calm-careflow .cf-site.cf-marketing .site-section-heading h2,.calm-careflow .cf-site.cf-marketing .site-cta h2{font-family:Georgia,'Times New Roman',serif;color:var(--ink);font-size:clamp(34px,3.6vw,49px);letter-spacing:-1.7px;line-height:1.15;font-weight:400}
+.cf-site.cf-marketing .cf-eyebrow{color:#976e88;font-size:10px;letter-spacing:1.5px;font-weight:600}
+.cf-site.cf-marketing .site-section-heading>p{max-width:370px;font-size:14px;color:var(--muted);line-height:1.85}
+.cf-site.cf-marketing .site-steps{gap:35px}
+.cf-site.cf-marketing .site-steps article{border-color:#e9dce5}
+.cf-site.cf-marketing .step-top{color:#aa849f}
+.cf-site.cf-marketing .site-steps h3{color:#46324d;font-size:19px;line-height:1.4}
+.cf-site.cf-marketing .site-steps p{font-size:14px;color:var(--muted);max-width:none}
+.cf-site.cf-marketing .site-workspace{background:#f5eef5;border:0}
+.cf-site.cf-marketing .site-service-routine{gap:22px}
+.cf-site.cf-marketing .site-service-routine article{background:#fffcfa;border:1px solid #eee3eb;padding:30px;border-radius:20px}
+.cf-site.cf-marketing .site-service-routine article>span{color:#a17c98;font-size:10px}
+.cf-site.cf-marketing .site-service-routine h3{color:#4f365a;font-size:22px;font-weight:500;letter-spacing:-.6px}
+.cf-site.cf-marketing .site-service-routine p,.cf-site.cf-marketing .site-service-boundary p{color:var(--muted);font-size:14px;line-height:1.85}
+.cf-site.cf-marketing .site-service-boundary{color:#a17c98}
+.cf-site.cf-marketing .site-area-grid{gap:18px}
+.cf-site.cf-marketing .site-area-card{background:#fbf5f1;border:1px solid #f1e8e3;border-radius:20px;padding:30px;min-height:220px}
+.cf-site.cf-marketing .site-area-card:nth-child(3n+2){background:#f3edf6;border-color:#ede2f1}
+.cf-site.cf-marketing .site-area-card:nth-child(3n){background:#f0f3ec;border-color:#e7ecdf}
+.cf-site.cf-marketing .site-area-icon,.cf-site.cf-marketing .site-area-arrow{color:#947899}
+.cf-site.cf-marketing .site-area-card h3{font-size:18px;color:#46324d;font-weight:500}
+.cf-site.cf-marketing .site-area-card p{color:var(--muted);font-size:13px;max-width:none}
+.cf-site.cf-marketing .site-area-card:hover{border-color:#bb9ebf;box-shadow:0 16px 32px #4d2e5110}
+.cf-site.cf-marketing .site-text-link{color:#775581;font-size:13px}
+.cf-site.cf-marketing .site-availability{background:#faf5f8;border-color:#eee4eb;padding:25px 30px;border-radius:17px}
+.cf-site.cf-marketing .site-availability strong{color:#62476c;font-size:13px}
+.cf-site.cf-marketing .site-availability p{color:var(--muted);font-size:12px;line-height:1.85}
+.cf-site.cf-marketing #pilot-outcomes{border-top:1px solid #eee5e7}
+.cf-site.cf-marketing .site-business-pricing{background:linear-gradient(135deg,#fbede6,#f6eaf5)}
+.cf-site.cf-marketing .site-pricing-grid{gap:25px}
+.cf-site.cf-marketing .site-pricing-grid article{background:#fffaf7;border:1px solid white;border-radius:24px;padding:40px}
+.cf-site.cf-marketing .site-pricing-grid .site-managed-plan{background:#f1e7f3;border-color:#e6d6eb}
+.cf-site.cf-marketing .site-pricing-grid h3{color:#4a3155;font-size:23px;font-weight:500}
+.cf-site.cf-marketing .site-price{color:#43254f;font-size:64px;letter-spacing:-3px}
+.cf-site.cf-marketing .site-price span,.cf-site.cf-marketing .site-pricing-grid li,.cf-site.cf-marketing .site-pricing-grid small{color:var(--muted)}
+.cf-site.cf-marketing .site-pricing-grid li:before{color:#a67e9f}
+.cf-site.cf-marketing .site-pricing-grid .cf-secondary{color:#5d3d69;border-color:#d7c2df;background:#ffffff70;min-height:48px;padding:15px 25px}
+.cf-site.cf-marketing .site-faq{gap:0}
+.cf-site.cf-marketing .site-faq details{background:transparent;border:0;border-bottom:1px solid #e9dfe7;border-radius:0;padding:25px 0}
+.cf-site.cf-marketing .site-faq summary{color:#51385c;font-size:17px;font-weight:500}
+.cf-site.cf-marketing .site-faq p{color:var(--muted);font-size:14px}
+.cf-site.cf-marketing #pilot{padding-top:30px}
+.cf-site.cf-marketing .site-cta{background:linear-gradient(120deg,#f5dbcb,#eddaee);border:1px solid #f0dfe7;border-radius:30px;padding:55px}
+.cf-site.cf-marketing .site-cta p:not(.cf-eyebrow){color:#78617b;font-size:14px;max-width:510px}
+.cf-site.cf-marketing .site-cta .cf-primary{background:var(--ink);color:white;padding:17px 24px}
+.cf-site.cf-marketing .site-business-email{color:#674b73!important}
+.cf-site.cf-marketing .site-contact-note,.cf-site.cf-marketing .site-research-note{color:#8c7b8d}
+.cf-site.cf-marketing .site-research-note a{color:#795383}
+.cf-site.cf-marketing .site-footer{border-top:1px solid #eee5e7;padding-top:38px;gap:22px}
+.cf-site.cf-marketing .site-footer>p,.cf-site.cf-marketing .site-footer>div,.cf-site.cf-marketing .site-footer small{color:#8b7588}
+.cf-site.cf-marketing .site-footer small{border-color:#eee5e7;font-size:10px;line-height:1.7}
+.cf-site.cf-marketing :focus-visible{outline:3px solid #9968a9;outline-offset:5px}
+@media(max-width:1100px){.marketing-float-left{left:-45px}.marketing-float-right{right:-35px}.marketing-float{padding:13px}.marketing-float div>span{display:none}.cf-site.cf-marketing .site-section-heading{gap:30px}}
+@media(max-width:800px){.cf-site.cf-marketing .site-header{top:25px;padding-inline:20px}.cf-site.cf-marketing .site-nav{padding:12px 15px 12px 20px;min-height:66px}.cf-site.cf-marketing .site-nav nav{gap:15px;font-size:11px}.cf-site.cf-marketing .site-nav>.cf-secondary{padding:12px 18px;font-size:12px}.cf-site.cf-marketing .site-container{padding-inline:25px}.cf-site.cf-marketing .site-hero{padding-top:160px;padding-bottom:60px}.calm-careflow .cf-site.cf-marketing .site-hero h1,.calm-careflow .cf-site.cf-marketing .site-hero h1 em{font-size:66px;letter-spacing:-3px}.cf-site.cf-marketing .site-section{padding-block:65px}.cf-site.cf-marketing .site-section-heading{display:block}.cf-site.cf-marketing .site-section-heading>p{max-width:100%;margin-top:22px}.cf-site.cf-marketing .site-section-heading>.site-text-link{margin-top:24px}.marketing-product-stage{margin-top:45px}.marketing-float{display:none}.cf-site.cf-marketing .walkthrough-panel{min-height:390px;padding:25px}.cf-site.cf-marketing .site-promise>div{flex-wrap:wrap;justify-content:center;gap:18px;padding-block:25px}.cf-site.cf-marketing .site-promise span{width:100%;text-align:center}.cf-site.cf-marketing .site-service-routine{grid-template-columns:1fr}.cf-site.cf-marketing .site-cta{padding:35px;flex-direction:column;align-items:flex-start}.cf-site.cf-marketing .site-pricing-grid article{padding:30px}}
+@media(max-width:520px){.cf-site.cf-marketing .site-header{top:20px;padding-inline:14px}.cf-site.cf-marketing .site-nav{min-height:62px;gap:10px}.cf-site.cf-marketing .site-nav nav{display:none}.cf-site.cf-marketing .cf-brand{font-size:23px}.cf-site.cf-marketing .site-hero{padding-top:135px;padding-inline:20px}.calm-careflow .cf-site.cf-marketing .site-hero h1,.calm-careflow .cf-site.cf-marketing .site-hero h1 em{font-size:52px;letter-spacing:-2.8px}.cf-site.cf-marketing .site-kicker{font-size:8px;letter-spacing:1.2px}.cf-site.cf-marketing .site-hero .site-lead{font-size:14px;line-height:1.85}.cf-site.cf-marketing .site-actions{gap:10px;flex-direction:column}.cf-site.cf-marketing .site-actions a{width:100%;max-width:300px}.cf-site.cf-marketing .site-hero-note{font-size:9px;gap:7px}.cf-site.cf-marketing .site-product{border-width:5px;border-radius:17px}.cf-site.cf-marketing .walkthrough-tabs{padding-inline:4px}.cf-site.cf-marketing .walkthrough-tabs button{font-size:9px;gap:4px}.cf-site.cf-marketing .walkthrough-panel{padding:22px 15px;min-height:420px}.calm-careflow .cf-site.cf-marketing .walkthrough-heading h2{font-size:20px}.cf-site.cf-marketing .walkthrough-record{padding:16px}.cf-site.cf-marketing .walkthrough-record h3{font-size:14px}.cf-site.cf-marketing .walkthrough-fields dd{font-size:9px}.cf-site.cf-marketing .walkthrough-footer{padding:15px 12px}.cf-site.cf-marketing .walkthrough-footer button{font-size:9px}.cf-site.cf-marketing .site-steps{grid-template-columns:1fr;gap:30px}.cf-site.cf-marketing .site-area-grid{grid-template-columns:1fr}.cf-site.cf-marketing .site-area-card{min-height:190px}.cf-site.cf-marketing .site-footer>div{flex-wrap:wrap;margin-left:0;gap:20px;line-height:1.8}.cf-site.cf-marketing .site-footer .cf-brand{font-size:23px}.cf-site.cf-marketing .site-cta{padding:30px}}
+@media(prefers-reduced-motion:reduce){.cf-site.cf-marketing *,.cf-site.cf-marketing *:before,.cf-site.cf-marketing *:after{animation:none!important;transition:none!important}}
+@media(max-width:1100px){.cf-marketing .marketing-float{display:none}}
