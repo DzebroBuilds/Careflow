@@ -26,8 +26,8 @@ export const requirements:Requirement[] = [
 ].map(([id,name,area,category,rule])=>({id,name,area,category:category as Category,rule:`309-035-${rule}`}));
 export const reviewCriteria = ['Correct document and person / home reference','Required sections completed for the applicable requirement','Dates and required signatures checked','Content reviewed against the applicable requirement'] as const;
 const tag=/\[CareFlow review v1\]([\s\S]*?)\[\/CareFlow review\]/g;
-export function visibleNotes(notes:string) { return notes.replace(tag,'').replace(/^CareFlow requirement: .*\r?\n?/gm,'').trim(); }
-export function withReviewMetadata(entry:Entry,notes:string) { const id=requirementId(entry);const reviews=[...entry.notes.matchAll(tag)].map(match=>match[0]);return [visibleNotes(notes),...(id?[`CareFlow requirement: ${id}`]:[]),...reviews].filter(Boolean).join('\n\n'); }
+export function visibleNotes(notes:string) { return notes.replace(tag,'').replace(/^CareFlow (?:requirement|document): .*\r?\n?/gm,'').trim(); }
+export function withReviewMetadata(entry:Entry,notes:string) { const id=requirementId(entry);const documentId=entry.notes.match(/^CareFlow document: ([a-z-]+)$/m)?.[1];const reviews=[...entry.notes.matchAll(tag)].map(match=>match[0]);return [visibleNotes(notes),...(id?[`CareFlow requirement: ${id}`]:[]),...(documentId?[`CareFlow document: ${documentId}`]:[]),...reviews].filter(Boolean).join('\n\n'); }
 export function requirementId(entry:Entry) { return entry.notes.match(/^CareFlow requirement: ([a-z-]+)$/m)?.[1] || ''; }
 export function linkRequirement(entry:Entry,id:string) { return entry.notes.replace(tag,'').replace(/^CareFlow requirement: .*\r?\n?/gm,'').trim()+`\n\nCareFlow requirement: ${id}`; }
 // Detect accidental worksheet edits without copying a large worksheet into the review marker.
