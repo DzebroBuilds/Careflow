@@ -1,0 +1,54 @@
+/* Interactive product tour. Panels remain stable in size; motion follows user input. */
+.walkthrough { transform:none; animation:cf-enter .65s var(--cf-ease) both; }
+.walkthrough-tabs { display:flex; padding:8px 12px 0; gap:4px; border-bottom:1px solid #e2e8dc; background:#fafbf7; }
+.walkthrough-tabs button { position:relative; min-height:48px; display:flex; flex:1; align-items:center; justify-content:center; gap:7px; padding:10px 5px; color:#65745e; font-size:11px; font-weight:600; border-radius:6px 6px 0 0; }
+.walkthrough-tabs button:hover { background:#eef3e8; color:#234e3b; }
+.walkthrough-tabs button[aria-selected=true] { color:#214f40; background:#edf3e7; }
+.walkthrough-tabs button[aria-selected=true]::after { content:''; position:absolute; bottom:-1px; left:10px; right:10px; height:2px; background:#527b4e; border-radius:2px; }
+.walkthrough-tabs button:focus-visible { outline-offset:-3px; }
+.walkthrough-panel { min-height:360px; padding:25px 24px; }
+.walkthrough-panels { display:grid; }
+.walkthrough-panel { grid-area:1 / 1; }
+.walkthrough-panel[data-active=false] { visibility:hidden; pointer-events:none; }
+.walkthrough-panel:focus-visible { outline-offset:-5px; border-radius:8px; }
+.walkthrough-scene { animation:cf-enter .3s var(--cf-ease) both; }
+.walkthrough-heading h2 { font-size:18px; font-weight:600; line-height:1.35; letter-spacing:-.55px; margin-top:10px; }
+.walkthrough-heading>p:last-child { font-size:11px; color:#65745e; line-height:1.7; margin-top:7px; }
+.walkthrough-heading .cf-eyebrow { font-size:9px; color:#65745e; }
+.walkthrough-record { border:1px solid #e1e7da; border-radius:10px; padding:18px; margin-top:22px; background:#fdfefb; }
+.walkthrough-record-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.walkthrough-record h3 { font-size:13px; font-weight:600; line-height:1.5; }
+.walkthrough-reference { font-size:10px; color:#63725d; margin-top:5px; }
+.walkthrough-fields { display:grid; grid-template-columns:1.3fr 1fr; gap:12px; border-block:1px solid #e8ecdf; padding:15px 0; margin-top:16px; }
+.walkthrough-fields dt { font-size:9px; color:#63725d; margin-bottom:8px; }
+.walkthrough-fields dd { display:flex; align-items:center; gap:6px; font-size:10px; color:#34583e; }
+.walkthrough-initials { background:#e4eddc; color:#46663a; width:21px; height:21px; display:grid; place-items:center; font-size:8px; border-radius:50%; flex-shrink:0; }
+.walkthrough-note { display:flex; align-items:flex-start; gap:8px; color:#63725d; font-size:10px; line-height:1.7; margin-top:14px; }
+.walkthrough-note svg { flex-shrink:0; margin-top:2px; }
+.walkthrough-footer { border-top:1px solid #e3e8dc; padding:15px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-radius:0 0 14px 14px; background:#f8faf4; }
+.walkthrough-footer>span { font-size:9px; color:#63725d; }
+.walkthrough-footer button,.walkthrough-footer a { display:inline-flex; align-items:center; gap:8px; min-height:32px; color:#345c3e; font-size:10px; font-weight:600; }
+.walkthrough-footer button:hover,.walkthrough-footer a:hover { color:#7c542e; }
+.walkthrough-evidence { display:flex; align-items:center; gap:10px; }
+.walkthrough-evidence>div { flex:1; min-width:0; }
+.walkthrough-evidence h3 { font-size:11px; overflow-wrap:anywhere; }
+.walkthrough-evidence p { font-size:9px; color:#63725d; margin-top:4px; }
+.walkthrough-file-icon { width:38px; height:42px; border-radius:8px; background:#f2e8d9; color:#89613e; display:grid; place-items:center; flex-shrink:0; }
+.walkthrough-file-tag { color:#806546; border:1px solid #ddd2be; padding:4px 6px; border-radius:4px; font-size:8px; }
+.walkthrough-document { padding:15px; margin-top:15px; background:white; border:1px solid #e1e7da; border-radius:5px; box-shadow:0 3px 6px #25433104; }
+.walkthrough-document>span { color:#707b67; font-size:7px; letter-spacing:1.1px; }
+.walkthrough-document h4 { font-size:12px; font-family:Georgia,serif; margin-top:8px; }
+.walkthrough-document p { font-size:8px; color:#63725d; margin:5px 0 12px; }
+.document-line { height:4px; border-radius:2px; background:#e9ede2; margin:7px 0; width:95%; }.document-line.short { width:65%; }
+.document-signature { display:flex; align-items:center; gap:6px; color:#496b3d; border-top:1px solid #e5eadf; padding-top:10px; margin-top:13px; font-size:8px; }
+.walkthrough-evidence-note { display:flex; gap:6px; align-items:center; font-size:9px; color:#63725d; margin-top:12px; }
+.walkthrough-readiness .product-metrics { margin-top:22px; }
+.walkthrough-readiness .product-metrics p,.walkthrough-readiness .product-metrics small,.walkthrough-readiness .product-row p,.walkthrough-readiness .product-queue-heading>span { color:#63725d; }
+.walkthrough .product-top { color:#63725d; }.walkthrough .product-caption { color:#63725d; bottom:-30px; font-size:9px; }
+@media(max-width:520px) { .walkthrough-tabs { padding-inline:6px; gap:2px; }.walkthrough-tabs button { font-size:9px; gap:4px; }.walkthrough-panel { min-height:385px; padding:20px 16px; }.walkthrough-heading h2 { font-size:17px; }.walkthrough-record { padding:15px; }.walkthrough-footer { padding:12px 16px; }.walkthrough-footer>span { font-size:8px; }.walkthrough-footer button,.walkthrough-footer a { font-size:9px; }.walkthrough .product-caption { font-size:8px; }.walkthrough-fields { grid-template-columns:1fr; gap:13px; }.walkthrough-fields>div { display:flex; align-items:center; justify-content:space-between; gap:12px; }.walkthrough-fields dt { margin:0; } }
+@media(prefers-reduced-motion:reduce) { .walkthrough,.walkthrough-scene { animation:none; } }
+.walkthrough .product-metrics strong span { color:#607157; }
+.walkthrough .product-metrics strong .metric-orange { color:#8b642e; }
+.cf-badge.amber { color:#775b16; }
+@media(max-width:520px) { .walkthrough-tabs button { font-size:10px; } }
+.walkthrough-document>span { color:#63725d; }
