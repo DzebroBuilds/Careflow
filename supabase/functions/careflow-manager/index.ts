@@ -60,7 +60,22 @@ Deno.serve(async(req:Request)=>{
     let open=true;const emit=(value:unknown)=>{if(open)try{controller.enqueue(encoder.encode(JSON.stringify(value)+'\n'));}catch{open=false;}};
     emit({type:'status',text:'Dawit is reviewing your fictional request.'});
     try{
-      const result=await runManager(client,input,emit,req.signal);
+      // Document review (v1, read-only record metadata): load this
+      // home's records with the caller's own Supabase client, so RLS
+      // still applies — never a service-role bypass, never another
+      // home's records. Only metadata columns are selected; evidence
+      // file contents are never loaded. (The records table has no
+      // created_at column — updated_at is selected instead.)
+      // If this query fails, the turn continues WITHOUT record context
+      // rather than failing: runManager falls back to the prompt-only
+      // context and the manager says so in its reply.
+      let records=[];let recordsAvailable=true;
+      try{
+        const {data:recordRows,error:recordsError}=await db.from('records').select('id,title,category,status,assignee,due_date,evidence_name,notes,updated_at').eq('home_id',input.homeId).order('due_date',{ascending:true}).limit(200);
+        if(recordsError)throw recordsError;
+        records=Array.isArray(recordRows)?recordRows:[];
+      }catch(e){console.error('careflow-manager records query failed',e instanceof Error?e.message:String(e));records=[];recordsAvailable=false;emit({type:'status',text:'Record context is unavailable for this home, so Dawit is reviewing from your prompt only.'});}
+      const result=await runManager(client,input,emit,req.signal,records,{recordsAvailable});
       // Log token counts only — never prompts, history, or replies.
       // Best-effort: a logging failure must not fail the reply.
       try{
