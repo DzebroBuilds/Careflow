@@ -24,7 +24,7 @@ import { parseDemoWorkspace } from '@/lib/demo-storage';
 import { rememberedUntil } from '@/lib/auth-storage';
 
 
-function FeatureLoading(){return <section className="cf-panel cf-feature-loading" role="status" aria-live="polite"><div className="cf-loading-line"/><div className="cf-loading-line short"/><p>Loading workspace tools…</p></section>;}
+function FeatureLoading(){return <section className="cf-panel cf-feature-loading" role="status" aria-live="polite"><div className="cf-loading-line"/><span style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0 0 0 0)',whiteSpace:'nowrap'}}>Loading workspace tools…</span></section>;}
 const OperationsDemo=dynamic(()=>import('./operations-demo'),{loading:FeatureLoading});
 const QuickbooksConnection=dynamic(()=>import('./quickbooks-connection'),{loading:FeatureLoading});
 const ResidentWorkspace=dynamic(()=>import('./resident-workspace'),{loading:FeatureLoading});
@@ -107,6 +107,31 @@ export default function Workspace({demo=false,initialSection="Readiness center"}
   // The workspace initializes once for this route. Reloads are explicit after writes.
 
   },[demo,loadCloud,initialSection]);
+  // Preload the lazily-loaded demo sections after first paint, so the
+  // first navigation to a new section does not show the
+  // "Loading workspace tools…" skeleton for several seconds while its
+  // chunk downloads on the static GitHub Pages export. Idle-time only;
+  // it renders nothing and changes no section behaviour.
+  useEffect(()=>{
+    const preload=()=>{
+      void import('./operations-demo');
+      void import('./quickbooks-connection');
+      void import('./resident-workspace');
+      void import('./resident-document-editor');
+      void import('./connected-tools');
+      void import('./team-lab');
+      void import('./manager-chat');
+      void import('./compliance-tracker');
+      void import('./dashboard-views');
+    };
+    const win=window as unknown as { requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (typeof win.requestIdleCallback === 'function') {
+      const id=win.requestIdleCallback(preload,{timeout:2000});
+      return ()=>win.cancelIdleCallback?.(id);
+    }
+    const timer=setTimeout(preload,800);
+    return ()=>clearTimeout(timer);
+  },[]);
   useEffect(()=>{ if(editing) entryDialog.current?.showModal(); else entryDialog.current?.close(); },[editing]);
   useEffect(()=>{ if(homeModal) homeDialog.current?.showModal(); else homeDialog.current?.close(); },[homeModal]);
   useEffect(() => {
