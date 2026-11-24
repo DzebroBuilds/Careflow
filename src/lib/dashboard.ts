@@ -1,11 +1,12 @@
 import type { Entry, Category } from './workspace';
 
 export const navigation: {group:string;items:readonly (readonly [string,string,string])[]}[] = [
-  { group: 'Overview', items: [['Readiness center','Dashboard','grid'],['Weekly review','Weekly owner review','clock'],['Compliance tracker','Compliance & files','shield'],['Calendar','Calendar','calendar'],['Approvals','Approvals','check']] },
-  { group: 'Care', items: [['Residents','Residents & documents','people'],['Document reader','OCR document reader','file'],['Medication records','Medication documentation','pill'],['Incidents','Incidents & follow-up','warning']] },
-  { group: 'Compliance', items: [['Inspection binder','Compliance documents','file'],['Support Documents','Support Documents','folder'],['Corrective actions','Corrective actions','shield'],['House checklist','House checklist','check'],['Monthly reviews','Monthly reviews','clock'],['Reports','Reports','chart'],['Templates','Templates','printer']] },
-  { group: 'People', items: [['Staff orientation','Staff readiness & training','people']] },
-  { group: 'Administration', items: [['QuickBooks','Intuit QuickBooks','chart'],['Connected tools','Connected tools','grid'],['Homes','Homes','home'],['Settings','Access & settings','lock'],['Activity history','Audit log','clock'],['Help','Help & glossary','file']] },
+  { group: 'Today', items: [['Readiness center','Dashboard','grid'],['Weekly review','Weekly owner review','clock'],['Calendar','Calendar','calendar'],['Approvals','Approvals','check']] },
+  { group: 'Care', items: [['Residents','Residents & documents','people'],['Medication records','Medication documentation','pill'],['Incidents','Incidents & follow-up','warning']] },
+  { group: 'Documents', items: [['Document reader','OCR document reader','file'],['Inspection binder','Compliance documents','file'],['Support Documents','Support Documents','folder'],['Templates','Templates','printer']] },
+  { group: 'Compliance', items: [['Corrective actions','Corrective actions','shield'],['House checklist','House checklist','check'],['Monthly reviews','Monthly reviews','clock'],['Reports','Reports','chart'],['Compliance tracker','Compliance & files','shield']] },
+  { group: 'People & staffing', items: [['Staff orientation','Staff readiness & training','people'],['Staff directory','Staff directory','people'],['Shift coverage','Shift coverage','calendar'],['Time approvals','Time approvals','clock'],['Expenses','Expenses','chart'],['Payroll preparation','Payroll preparation','chart']] },
+  { group: 'Administration', items: [['Homes','Homes','home'],['Settings','Access & settings','lock'],['Activity history','Audit log','clock'],['Connected tools','Connected tools','grid'],['QuickBooks','Intuit QuickBooks','chart'],['Help','Help & glossary','file']] },
   { group: 'AI workspace', items: [['Your team','AI manager','people']] },
 ] as const;
 const workspaceLabels:Record<string,string>={'Readiness center':'Today','Staff directory':'People','Shift coverage':'Schedule','Time approvals':'Time & approvals','Payroll preparation':'Payroll preparation','Document reader':'Document reader'};
