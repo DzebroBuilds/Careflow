@@ -46,6 +46,21 @@ create table public.activity (
 );
 create index activity_home_time_idx on public.activity(home_id,created_at desc);
 
+-- Muse AI usage log (durable token spend for the Muse AI manager).
+-- Only token counts are stored here. Never store prompts, conversation
+-- history, replies, or any resident / employee / clinical content.
+create table public.ai_usage (
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null references auth.users(id),
+ home_id uuid references public.homes(id),
+ model text not null,
+ input_tokens integer not null default 0 check (input_tokens >= 0),
+ output_tokens integer not null default 0 check (output_tokens >= 0),
+ total_tokens integer not null default 0 check (total_tokens >= 0),
+ created_at timestamptz not null default now()
+);
+create index ai_usage_user_time_idx on public.ai_usage(user_id,created_at desc);
+
 -- Necessary definer lookup avoids recursive membership RLS; the only identity
 -- accepted is auth.uid(), never a caller-supplied user or editable JWT metadata.
 create function careflow_private.home_role(target uuid) returns text
@@ -62,11 +77,13 @@ alter table public.homes enable row level security;
 alter table public.home_members enable row level security;
 alter table public.records enable row level security;
 alter table public.activity enable row level security;
-revoke all on public.homes,public.home_members,public.records,public.activity from anon,authenticated;
+alter table public.ai_usage enable row level security;
+revoke all on public.homes,public.home_members,public.records,public.activity,public.ai_usage from anon,authenticated;
 grant select,insert,update on public.homes to authenticated;
 grant select,insert,update,delete on public.home_members to authenticated;
 grant select,insert,update on public.records to authenticated;
 grant select on public.activity to authenticated;
+grant select,insert on public.ai_usage to authenticated;
 
 create policy home_read on public.homes for select to authenticated using (careflow_private.home_role(id) is not null);
 create policy home_create on public.homes for insert to authenticated with check (owner_id=(select auth.uid()) and (select auth.uid()) is not null and (select auth.jwt()->>'aal')='aal2');
@@ -86,6 +103,9 @@ create policy record_update on public.records for update to authenticated using 
  careflow_private.home_role(home_id) in ('owner','admin') or (careflow_private.home_role(home_id)='staff' and status<>'Complete')
 );
 create policy activity_read on public.activity for select to authenticated using (careflow_private.home_role(home_id) is not null);
+-- Each user may log their own AI usage and read only their own rows.
+create policy ai_usage_insert_own on public.ai_usage for insert to authenticated with check (user_id=(select auth.uid()));
+create policy ai_usage_read_own on public.ai_usage for select to authenticated using (user_id=(select auth.uid()));
 
 create function careflow_private.record_guard() returns trigger language plpgsql security invoker set search_path='' as $$
 begin
