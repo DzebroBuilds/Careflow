@@ -243,6 +243,9 @@ test('runManager reports record context unavailable when the records query faile
   const client=mockDocumentClient();
   const result=await runManager(client,{homeId:valid.homeId,message:'Review the whole fictional home.',history:[]},()=>{},undefined,[],{recordsAvailable:false});
   assert.equal(result.recordsUsed.available,false);
-  const combineCall=client.calls.find((c)=>c.model===MUSE_MODELS.manager);
+  // Whole-home review routes to all four specialists, so the combine
+  // call uses Wonder (complex), not Spark (manager) — see manager.mjs
+  // `isComplex = specialists.length >= 3`.
+  const combineCall=client.calls.find((c)=>c.model===MUSE_MODELS.manager||c.model===MUSE_MODELS.complex);
   assert.equal(JSON.parse(combineCall.input).context,NO_RECORDS_CONTEXT);
 });
